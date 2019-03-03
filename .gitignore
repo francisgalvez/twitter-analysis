@@ -35,7 +35,9 @@ cmake-build-*/
 # Mongo Explorer plugin
 .idea/**/mongoSettings.xml
 
+# Personal
 **secret.py
 **twitter_plot.html
 spark-warehouse
+__pycache__
 
