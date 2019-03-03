@@ -13,9 +13,6 @@ def map_tut(list):
 
     m.save('twitter_plot.html')
 
-
-google_api_key = "AIzaSyAP4Ib-SHglTmYto6HabcS2bbIlmzT10_k"
-
 spark = SparkSession \
     .builder \
     .appName("TwitterAnalysis") \
@@ -50,12 +47,10 @@ for address in ubicaciones:
     api_response = requests.get('http://www.datasciencetoolkit.org/maps/api/geocode/json?address=' + str(address))
     api_response_dict = api_response.json()
 
-    print(str(api_response_dict['status']))
-
     if api_response_dict['status'] == 'OK':
         latitude = api_response_dict['results'][0]['geometry']['location']['lat']
         longitude = api_response_dict['results'][0]['geometry']['location']['lng']
-        coordenadas.append("[" + str(latitude) + "," + str(longitude) + "]")
+        coordenadas.append("[" + str(longitude) + "," + str(latitude) + "]")
 
 
 map_tut(coordenadas)
