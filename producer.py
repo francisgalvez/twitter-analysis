@@ -17,10 +17,12 @@ import tweepy
 from kafka import SimpleProducer, KafkaClient
 from secret import consumer_key, consumer_secret, access_token, access_token_secret
 
+
 def get_auth():
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
     return auth
+
 
 class MyStreamListener(tweepy.StreamListener):
     def on_data(self, data):
@@ -31,6 +33,7 @@ class MyStreamListener(tweepy.StreamListener):
 
     def on_error(self, status):
         print(status)
+
 
 if __name__ == '__main__':
     # localhost:9092 = Default Zookeeper Producer Host and Port Adresses
