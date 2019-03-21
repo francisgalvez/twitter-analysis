@@ -26,7 +26,7 @@ def parse_json(df):
     else:
         source = 'Unknown'
 
-    user_id = df['user']['id']
+    user_name = df['user']['screen_name']
 
     # Si tenemos ubicación exacta, es decir, coordinates != null, las cogemos antes que place
     if df['coordinates'] is not None:
@@ -52,7 +52,7 @@ def parse_json(df):
     # Para obtener la fecha, dividimos el timestamp entre 1000 (viene en ms)
     date = datetime.utcfromtimestamp(int(timestamp)/1000).strftime('%Y-%m-%d %H:%M:%S')
 
-    return [id, text, source, user_id, location, sensitive, lang, timestamp, date]
+    return [id, text, source, user_name, location, sensitive, lang, timestamp, date]
 
 
 def get_coordinates(address):
@@ -107,7 +107,7 @@ tweet_schema = StructType([
                     StructField("id", StringType(), False),
                     StructField("text", StringType(), False),
                     StructField("source", StringType(), True),
-                    StructField("user_id", StringType(), False),
+                    StructField("user_name", StringType(), False),
                     StructField("location", StringType(), True),
                     StructField("sensitive", BooleanType(), True),
                     StructField("lang", StringType(), True),
