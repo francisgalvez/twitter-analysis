@@ -7,7 +7,7 @@
 
     3. Iniciar producer
 
-    4. Iniciar consumer: spark-submit --packages org.apache.spark:spark-streaming-kafka-0-8_2.11:2.2.0,org.mongodb.spark:mongo-spark-connector_2.11:2.4.0 spark-consumer.py
+    4. Iniciar consumer: spark-submit --packages org.apache.spark:spark-streaming-kafka-0-8_2.11:2.2.0,org.mongodb.spark:mongo-spark-connector_2.11:2.4.0 consumer.py
 
     5. Ver topic desde el principio:
         bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic twitter --from-beginning

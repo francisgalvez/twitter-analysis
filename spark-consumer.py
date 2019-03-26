@@ -3,7 +3,7 @@ from pyspark.streaming import StreamingContext
 from pyspark.streaming.kafka import KafkaUtils
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
-from pyspark.sql.types import StructType, StructField, StringType, BooleanType
+from pyspark.sql.types import StructType, StructField, StringType, BooleanType, ArrayType
 import json
 from datetime import datetime
 import redis
@@ -15,7 +15,40 @@ import string
 def parse_json(df):
     id = df['id']
 
-    text = df['text']
+    if 'extended_tweet' in df:
+        text = df['extended_tweet']['full_text']
+    elif 'retweeted_status' in df:
+        if 'extended_tweet' in df['retweeted_status']:
+            text = df['retweeted_status']['extended_tweet']['full_text']
+        else:
+            text = df['text']
+    else:
+        text = df['text']
+
+    text_lower = text.lower()
+
+    topics = []
+
+    if 'oracle' in text_lower:
+        topics.append('Oracle')
+    if 'mysql' in text_lower:
+        topics.append('MySQL')
+    if ('sql server' or 'sqlserver') in text_lower:
+        topics.append('SQL Server')
+    if 'postgres' in text_lower:
+        topics.append('PostgreSQL')
+    if 'mongo' in text_lower:
+        topics.append('MongoDB')
+    if 'ibm db2' in text_lower:
+        topics.append('IBM db2')
+    if 'microsoft access' in text_lower:
+        topics.append('Access')
+    if 'redis' in text_lower:
+        topics.append('Redis')
+    if 'elasticsearch' in text_lower:
+        topics.append('Elasticsearch')
+    if 'sqlite' in text_lower:
+        topics.append('SQLite')
 
     if 'android' or 'Android' in df['source']:
         source = 'Android'
@@ -52,7 +85,7 @@ def parse_json(df):
     # Para obtener la fecha, dividimos el timestamp entre 1000 (viene en ms)
     date = datetime.utcfromtimestamp(int(timestamp)/1000).strftime('%Y-%m-%d %H:%M:%S')
 
-    return [id, text, source, user_name, location, sensitive, lang, timestamp, date]
+    return [id, topics, text, source, user_name, location, sensitive, lang, timestamp, date]
 
 
 def get_coordinates(address):
@@ -79,7 +112,7 @@ def get_coordinates(address):
                 latitude = api_response_dict['results'][0]['geometry']['location']['lat']
                 longitude = api_response_dict['results'][0]['geometry']['location']['lng']
                 set_cached_location(decoded_location, latitude, longitude)
-                location = "[" + str(latitude) + "," + str(longitude) + "]"
+                location = '[' + str(latitude) + ',' + str(longitude) + ']'
                 return location
             else:
                 set_cached_location(address, None, None)
@@ -100,23 +133,24 @@ def set_cached_location(nombre, latitud, longitud):
 
 
 def write_to_database(tweet):
-    tweet.write.format("com.mongodb.spark.sql.DefaultSource").mode("append").save()
+    tweet.write.format('com.mongodb.spark.sql.DefaultSource').mode('append').save()
 
 
 tweet_schema = StructType([
-                    StructField("id", StringType(), False),
-                    StructField("text", StringType(), False),
-                    StructField("source", StringType(), True),
-                    StructField("user_name", StringType(), False),
-                    StructField("location", StringType(), True),
-                    StructField("sensitive", BooleanType(), True),
-                    StructField("lang", StringType(), True),
-                    StructField("timestamp", StringType(), False),
-                    StructField("date", StringType(), False)
+                    StructField('id', StringType(), False),
+                    StructField('topics', ArrayType(StringType()), False),
+                    StructField('text', StringType(), False),
+                    StructField('source', StringType(), True),
+                    StructField('user_name', StringType(), False),
+                    StructField('location', StringType(), True),
+                    StructField('sensitive', BooleanType(), True),
+                    StructField('lang', StringType(), True),
+                    StructField('timestamp', StringType(), False),
+                    StructField('date', StringType(), False)
                     ])
 
 #  1. Create Spark configuration
-conf = SparkConf().setAppName("TwitterAnalysis").setMaster("local[*]")
+conf = SparkConf().setAppName('TwitterAnalysis').setMaster('local[*]')
 
 # Create Spark Context to Connect Spark Cluster
 sc = SparkContext(conf=conf)
@@ -126,12 +160,12 @@ ssc = StreamingContext(sc, 10)
 
 spark = SparkSession \
     .builder \
-    .appName("TwitterAnalysis") \
-    .config("spark.mongodb.output.uri", "mongodb://127.0.0.1/twitter.coll") \
+    .appName('TwitterAnalysis') \
+    .config('spark.mongodb.output.uri', 'mongodb://127.0.0.1/twitter.coll') \
     .getOrCreate()
 
 # Create Kafka Stream to Consume Data Comes From Twitter Topic
-kafkaStream = KafkaUtils.createDirectStream(ssc, topics=['twitter'], kafkaParams={"metadata.broker.list": 'localhost:9092'})
+kafkaStream = KafkaUtils.createDirectStream(ssc, topics=['twitter'], kafkaParams={'metadata.broker.list': 'localhost:9092'})
 
 parsedJSON = kafkaStream.map(lambda x: parse_json(json.loads(x[1])))
 

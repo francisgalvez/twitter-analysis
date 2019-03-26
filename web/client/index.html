@@ -21,7 +21,7 @@
 
     var map = L.map('my-map').setView([20.0,0.0], 2);
 
-    $.getJSON("../temp.geojson", function(data) {
+    $.getJSON("temp.geojson", function(data) {
         var geojson = L.geoJson(data, {
           onEachFeature: function (feature, layer) {
             layer.bindPopup("<blockquote class=twitter-tweet data-cards=hidden data-lang=" + feature.properties.lang + "><p lang="
