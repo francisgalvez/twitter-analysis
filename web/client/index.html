@@ -1,45 +1,160 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.css" />
-    <link rel="stylesheet" href="styles.css" />
-    <script src="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js"></script>
-    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-
-    <meta charset="UTF-8">
-    <meta name="twitter:dnt" content="on">
+    <meta charset="utf-8" />
     <title>Twitter Map</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <meta name="twitter:dnt" content="on">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js" charset="utf-8"></script>
+    <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
+    <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css' rel='stylesheet' />
+    <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-    <div id="my-map"></div>
-</body>
+    <div id="map"></div>
 
-<script>
-    var basemap = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-    });
-
-    var map = L.map('my-map').setView([20.0,0.0], 2);
-
-    $.getJSON("temp.geojson", function(data) {
-        var geojson = L.geoJson(data, {
-          onEachFeature: function (feature, layer) {
-            layer.bindPopup("<blockquote class=twitter-tweet data-cards=hidden data-lang=" + feature.properties.lang + "><p lang="
-            + feature.properties.lang + "dir=ltr>" + feature.properties.text + "</p>&mdash;" + feature.properties.user_name +
-            "<a href=https://twitter.com/" + feature.properties.user_name + "/status/" + feature.properties.id + ">"
-            + feature.properties.date + "</a></blockquote>");
-          }
+    <script>
+        var tweets = $.ajax({
+            url: "http://localhost:3000/api/tweets/located",
+            dataType: "json",
+            success: console.log("County data successfully loaded."),
+            error: function(xhr) {
+                console.log(xhr.statusText);
+            }
         });
 
-        basemap.addTo(map);
-        geojson.addTo(map);
-    });
+        // Layers
+        var oracle = new L.layerGroup();
+        var mysql = new L.layerGroup();
+        var sqlserver = new L.layerGroup();
+        var postgres = new L.layerGroup();
+        var mongo = new L.layerGroup();
+        var ibm = new L.layerGroup();
+        var access = new L.layerGroup();
+        var redis = new L.layerGroup();
+        var elasticsearch = new L.layerGroup();
+        var sqlite = new L.layerGroup();
 
-    map.on('popupopen', function(e) {
-        $.getScript("https://platform.twitter.com/widgets.js");
-        var px = map.project(e.popup._latlng);
-        px.y -= e.popup._container.clientHeight/2;
-        map.panTo(map.unproject(px),{animate: true});
-    });
-</script>
+        var enginesOverlay = {
+            "Oracle": oracle,
+            "MySQL": mysql,
+            "SQL Server": mysql,
+            "PostgreSQL": postgres,
+            "MongoDB": mongo,
+            "IBM db2": ibm,
+            "Microsoft Access": access,
+            "Redis": redis,
+            "Elasticsearch": elasticsearch,
+            "SQLite": sqlite
+        };
+
+        // Types of basemaps
+        var lightMap = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> & &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            maxZoom: 16,
+            minZoom: 2.5,
+            continuousWorld: false,
+        });
+
+        var nightmodeMap = L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> & &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            maxZoom: 16,
+            minZoom: 2.5,
+            continuousWorld: false,
+        });
+
+        var basemaps = {
+            "Modo noche": nightmodeMap,
+            "Claro": lightMap
+        };
+
+        var groupedOverlays = {
+            "Motores de BD": { enginesOverlay }
+        };
+
+        var map = L.map('map', {
+            layers: [lightMap, oracle, mysql, sqlserver, postgres, mongo, ibm, access, redis, elasticsearch, sqlite]
+        }).setView([20.0,0.0], 2);
+
+        L.control.layers(basemaps, enginesOverlay).addTo(map);
+
+        // Set map bounds
+        var bounds = map.getBounds();
+        var southWest = bounds.getSouthWest();
+        var northEast = bounds.getNorthEast();
+        bounds = L.latLngBounds(southWest,northEast);
+        map.setMaxBounds(bounds);
+
+        // User location plugin
+        map.addControl(L.control.locate({
+            locateOptions: {
+                    maxZoom: 7
+        }}));
+
+        // Fullscreen plugin
+        map.addControl(new L.Control.Fullscreen());
+
+        var mongoIcon = L.icon({
+                iconUrl: '/icons/5b995cf6bd293eadd7dbc7e9_mongodb.png',
+                iconSize: [45, 45], // size of the icon
+                iconAnchor: [25, 41],
+                popupAnchor: [-2, -40]
+        });
+
+        $.when(tweets).done(function() {
+            var geojson = L.geoJson(tweets.responseJSON, {
+                onEachFeature: function (feature, layer) {
+                    if(jQuery.inArray("Oracle", feature.properties.topics) !== -1){
+                        layer.addTo(oracle);
+                    }
+                    if(jQuery.inArray("MySQL", feature.properties.topics) !== -1){
+                        layer.addTo(mysql);
+                    }
+                    if(jQuery.inArray("SQL Server", feature.properties.topics) !== -1){
+                        layer.addTo(sqlserver);
+                    }
+                    if(jQuery.inArray("PostgreSQL", feature.properties.topics) !== -1){
+                        layer.addTo(postgres);
+                    }
+                    if(jQuery.inArray("MongoDB", feature.properties.topics) !== -1){
+                        layer.addTo(mongo);
+                    }
+                    if(jQuery.inArray("IBM db2", feature.properties.topics) !== -1){
+                        layer.addTo(ibm);
+                    }
+                    if(jQuery.inArray("Access", feature.properties.topics) !== -1){
+                        layer.addTo(access);
+                    }
+                    if(jQuery.inArray("Redis", feature.properties.topics) !== -1){
+                        layer.addTo(redis);
+                    }
+                    if(jQuery.inArray("Elasticsearch", feature.properties.topics) !== -1){
+                        layer.addTo(elasticsearch);
+                    }
+                    if(jQuery.inArray("SQLite", feature.properties.topics) !== -1){
+                        layer.addTo(sqlite);
+                    }
+                    layer.bindPopup("<blockquote class=twitter-tweet data-cards=hidden data-conversation=none data-lang=es" + "><p lang="
+                    + feature.properties.lang + "dir=ltr>" + feature.properties.text + "</p>&mdash;" + feature.properties.user_name +
+                    "<a href=https://twitter.com/" + feature.properties.user_name + "/status/" + feature.properties.id + ">"
+                    + feature.properties.date + "</a></blockquote>",{autoPan:false});
+                }
+            });
+        });
+
+        map.on('popupopen', function(e) {
+            $.getScript("https://platform.twitter.com/widgets.js");
+            var px = map.project(e.popup._latlng);
+            px.y -= e.popup._container.clientHeight;
+            map.panTo(map.unproject(px),{animate: true});
+        });
+    </script>
+</body>
 </html>

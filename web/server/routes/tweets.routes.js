@@ -23,44 +23,56 @@ router.get('/:language?', async (req, res) => {
 // Get tweets
 router.get('/', async (req, res) => {
     var located = req.query.located;
-    var language = req.query.language;
+    var topic = req.query.topic;
 
     // If false, we only find occurrences of both words together. If true, we find both topics.
     var inclusive = req.query.inclusive;
     var tweets;
 
     if (located != undefined) {
-        if(!inclusive){
-            tweets = await Tweet.find({ topics : { $in: language }, location : { $exists : located }}).lean();
+        if(topic == undefined){
+            tweets = await Tweet.find({ location : { $exists : located }}).lean();
         } else {
-            tweets = await Tweet.find({ topics : { $all: language }, location : { $exists : located }}).lean();
+            if(!inclusive){
+                tweets = await Tweet.find({ topics : { $in: topic }, location : { $exists : located }}).lean();
+            } else {
+                tweets = await Tweet.find({ topics : { $all: topic }, location : { $exists : located }}).lean();
+            }
         }
     } else {
-        if(!inclusive){
-            tweets = await Tweet.find({ topics : { $in: language }}).lean();
+        if(topic == undefined){
+            tweets = await Tweet.find().lean();
         } else {
-            tweets = await Tweet.find({ topics : { $all: language }}).lean();
+            if(!inclusive){
+                tweets = await Tweet.find({ topics : { $in: topic }}).lean();
+            } else {
+                tweets = await Tweet.find({ topics : { $all: topic }}).lean();
+            }
         }
     }
  
-    res.json(geojson.parse(tweets, { Point: 'location' }));
+    res.jsonp(geojson.parse(tweets, { Point: 'location' }));
 });
 
 // Get located tweets
 router.get('/located', async (req, res) => {
-    var language = req.query.language;
+    var topic = req.query.topic;
 
     // If false, we only find occurrences of both words together. If true, we find both topics.
     var inclusive = req.query.inclusive;
     var tweets;
 
-    if(!inclusive){
-        tweets = await Tweet.find({ topics : { $in: language }, location : { $exists : true }}).lean();
+    if(topic == undefined){
+        tweets = await Tweet.find({ location : { $exists : true }}).lean();
     } else {
-        tweets = await Tweet.find({ topics : { $all: language }, location : { $exists : true }}).lean();
+        if(!inclusive){
+            tweets = await Tweet.find({ topics : { $in: topic }, location : { $exists : true }}).lean();
+        } else {
+            tweets = await Tweet.find({ topics : { $all: topic }, location : { $exists : true }}).lean();
+        }
     }
  
-    res.json(geojson.parse(tweets, { Point: 'location' }));
+    res.jsonp(geojson.parse(tweets, { Point: 'location' }));
 });
 
 // Get located tweets from the last two hours

@@ -3,13 +3,14 @@ from pyspark.streaming import StreamingContext
 from pyspark.streaming.kafka import KafkaUtils
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
-from pyspark.sql.types import StructType, StructField, StringType, BooleanType, ArrayType
+from pyspark.sql.types import StructType, StructField, StringType, BooleanType, ArrayType, DoubleType
 import json
 from datetime import datetime
 import redis
 import requests
 import unidecode
 import string
+import ast
 
 
 def parse_json(df):
@@ -97,7 +98,7 @@ def get_coordinates(address):
     response = get_cached_location(str(decoded_location))
 
     if response is not None:
-        return response
+        return ast.literal_eval(response)
     else:
         api_response = requests.get(
             'http://www.datasciencetoolkit.org/maps/api/geocode/json?address=' + str(decoded_location))
@@ -111,8 +112,8 @@ def get_coordinates(address):
             if api_response_dict['status'] == 'OK':
                 latitude = api_response_dict['results'][0]['geometry']['location']['lat']
                 longitude = api_response_dict['results'][0]['geometry']['location']['lng']
-                set_cached_location(decoded_location, latitude, longitude)
-                location = '[' + str(latitude) + ',' + str(longitude) + ']'
+                set_cached_location(decoded_location, longitude, latitude)
+                location = [float(longitude), float(latitude)]
                 return location
             else:
                 set_cached_location(address, None, None)
@@ -127,9 +128,9 @@ def get_cached_location(key):
     return my_server.get(key)
 
 
-def set_cached_location(nombre, latitud, longitud):
+def set_cached_location(name, longitude, latitude):
     my_server = redis.Redis(connection_pool=redis.ConnectionPool(host='localhost', port=6379, decode_responses=True, db=0))
-    my_server.set(nombre, str([latitud, longitud]).encode('utf-8'))
+    my_server.set(name, str([longitude, latitude]))
 
 
 def write_to_database(tweet):
@@ -142,7 +143,7 @@ tweet_schema = StructType([
                     StructField('text', StringType(), False),
                     StructField('source', StringType(), True),
                     StructField('user_name', StringType(), False),
-                    StructField('location', StringType(), True),
+                    StructField('location', ArrayType(DoubleType()), True),
                     StructField('sensitive', BooleanType(), True),
                     StructField('lang', StringType(), True),
                     StructField('timestamp', StringType(), False),
