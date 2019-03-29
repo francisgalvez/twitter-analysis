@@ -6,16 +6,22 @@
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
     <meta name="twitter:dnt" content="on">
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js" charset="utf-8"></script>
     <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
+    <script type='text/javascript' src='http://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js'></script>
+    <script src="js/leaflet.awesome-markers.js"></script>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
-    <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css' rel='stylesheet' />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css"/>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.css" />
+    <link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.Default.css" />
+    <link rel="stylesheet" href="css/leaflet.awesome-markers.css">
+    <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
     <div id="map"></div>
@@ -24,36 +30,14 @@
         var tweets = $.ajax({
             url: "http://localhost:3000/api/tweets/located",
             dataType: "json",
-            success: console.log("County data successfully loaded."),
             error: function(xhr) {
                 console.log(xhr.statusText);
             }
         });
 
-        // Layers
-        var oracle = new L.layerGroup();
-        var mysql = new L.layerGroup();
-        var sqlserver = new L.layerGroup();
-        var postgres = new L.layerGroup();
-        var mongo = new L.layerGroup();
-        var ibm = new L.layerGroup();
-        var access = new L.layerGroup();
-        var redis = new L.layerGroup();
-        var elasticsearch = new L.layerGroup();
-        var sqlite = new L.layerGroup();
-
-        var enginesOverlay = {
-            "Oracle": oracle,
-            "MySQL": mysql,
-            "SQL Server": mysql,
-            "PostgreSQL": postgres,
-            "MongoDB": mongo,
-            "IBM db2": ibm,
-            "Microsoft Access": access,
-            "Redis": redis,
-            "Elasticsearch": elasticsearch,
-            "SQLite": sqlite
-        };
+        var map = L.map('map', {
+            layers: [oracle, mysql, sqlserver, postgres, mongo, ibm, access, redis, elasticsearch, sqlite]
+        }).setView([20.0,0.0], 2);
 
         // Types of basemaps
         var lightMap = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
@@ -61,7 +45,9 @@
             maxZoom: 16,
             minZoom: 2.5,
             continuousWorld: false,
-        });
+        }).addTo(map);
+
+        var nightMode = false;
 
         var nightmodeMap = L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> & &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -70,20 +56,21 @@
             continuousWorld: false,
         });
 
-        var basemaps = {
-            "Modo noche": nightmodeMap,
-            "Claro": lightMap
-        };
+        /*
+        // Select all button checked at first
+        $( "#selectAll" ).parent().siblings(":input").prop("checked", true);
 
-        var groupedOverlays = {
-            "Motores de BD": { enginesOverlay }
-        };
-
-        var map = L.map('map', {
-            layers: [lightMap, oracle, mysql, sqlserver, postgres, mongo, ibm, access, redis, elasticsearch, sqlite]
-        }).setView([20.0,0.0], 2);
-
-        L.control.layers(basemaps, enginesOverlay).addTo(map);
+        $( "#selectAll" ).parent().siblings().change(function(){
+            if($( "#selectAll" ).parent().siblings().is(':checked', true)){
+                for (var name in enginesOverlay) {
+                    map.addLayer(enginesOverlay[name]);
+                }
+            } else {
+                for (var name in enginesOverlay) {
+                    map.removeLayer(enginesOverlay[name]);
+                }
+            }
+        });*/
 
         // Set map bounds
         var bounds = map.getBounds();
@@ -101,52 +88,148 @@
         // Fullscreen plugin
         map.addControl(new L.Control.Fullscreen());
 
-        var mongoIcon = L.icon({
-                iconUrl: '/icons/5b995cf6bd293eadd7dbc7e9_mongodb.png',
-                iconSize: [45, 45], // size of the icon
-                iconAnchor: [25, 41],
-                popupAnchor: [-2, -40]
+        // Night mode control
+        var nightModeControl =  L.Control.extend({
+            options: { position: 'topleft' },
+
+            onAdd: function (map) {
+                var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+
+                container.style.backgroundColor = 'white';     
+                container.style.backgroundImage = "url(images/moon-solid.svg)";
+                container.style.backgroundRepeat = 'no-repeat';
+                container.style.backgroundPosition = 'center';
+                container.style.backgroundSize = "20px 20px";
+                container.style.width = '30px';
+                container.style.height = '30px';
+                container.style.cursor = 'pointer';
+                container.title = 'Modo oscuro';
+
+                container.onclick = function(){
+                    if(nightMode){
+                        map.removeLayer(nightmodeMap);
+                        map.addLayer(lightMap);
+                        nightMode = false;
+                    } else {
+                        map.removeLayer(lightMap);
+                        map.addLayer(nightmodeMap);
+                        nightMode = true;
+                    }
+                }
+                return container;
+            }
         });
+
+        map.addControl(new nightModeControl());
+
+        /*
+        function getColor(topic){
+            return  topic == "Oracle" ? 'red' :
+                    topic == "MySQL" ? 'darkblue' :
+                    topic == "SQL Server" ? 'gray' :
+                    topic == "PostgreSQL" ? 'lightblue' :
+                    topic == "MongoDB" ? 'green' :
+                    topic == "IBM DB2" ? 'black' :
+                    topic == "Access" ? 'darkred' :
+                    topic == "Redis" ? 'red' :
+                    topic == "Elasticsearch" ? 'beige' :
+                                        'blue';
+        }
+
+       
+        // Leyenda
+        var legend = L.control({position: 'bottomright'});
+
+        legend.onAdd = function (map) {
+
+            var div = L.DomUtil.create('ul', 'info legend');
+            topics = ["Oracle", "MySQL", "SQL Server", "PostgreSQL", "MongoDB", "IBM DB2", "Access", "Redis", "Elasticsearch", "SQLite"];
+
+            for (var i = 0; i < topics.length; i++) {
+                div.innerHTML +=
+                    '<li><br><i style="background:' + getColor(topics[i]) + '"></i> ' + topics[i] + '</li>';
+            }
+
+            return div;
+        };
+
+        legend.addTo(map);
+        */
+
+        // Layers
+        var oracle = new L.layerGroup();
+        var mysql = new L.layerGroup();
+        var sqlserver = new L.layerGroup();
+        var postgres = new L.layerGroup();
+        var mongo = new L.layerGroup();
+        var ibm = new L.layerGroup();
+        var access = new L.layerGroup();
+        var redis = new L.layerGroup();
+        var elasticsearch = new L.layerGroup();
+        var sqlite = new L.layerGroup();
+        //var over = new L.layerGroup();
+
+        var enginesOverlay = {
+            //'<p id="selectAll">Seleccionar todo</p>': over,
+            '<i style="background: #D63E2A"></i>Oracle': oracle,
+            '<i style="background: #0067A3"></i>MySQL': mysql,
+            '<i style="background: #575757"></i>SQL Server': mysql,
+            '<i style="background: #89DBFF"></i>PostgreSQL': postgres,
+            '<i style="background: #72AF26"></i>MongoDB': mongo,
+            '<i style="background: #303030"></i>IBM db2': ibm,
+            '<i style="background: #A03336"></i>Microsoft Access': access,
+            '<i style="background: #D63E2A"></i>Redis': redis,
+            '<i style="background: orange"></i>Elasticsearch': elasticsearch,
+            '<i style="background: #38AADD"></i>SQLite': sqlite
+        };
+
+        var markerClusters = L.markerClusterGroup();
 
         $.when(tweets).done(function() {
             var geojson = L.geoJson(tweets.responseJSON, {
                 onEachFeature: function (feature, layer) {
                     if(jQuery.inArray("Oracle", feature.properties.topics) !== -1){
+                        layer.setIcon(L.AwesomeMarkers.icon({ markerColor: 'red'}));
                         layer.addTo(oracle);
-                    }
-                    if(jQuery.inArray("MySQL", feature.properties.topics) !== -1){
+                    } else if(jQuery.inArray("MySQL", feature.properties.topics) !== -1){
+                        layer.setIcon(L.AwesomeMarkers.icon({markerColor: 'darkblue'}));
                         layer.addTo(mysql);
-                    }
-                    if(jQuery.inArray("SQL Server", feature.properties.topics) !== -1){
+                    } else if(jQuery.inArray("SQL Server", feature.properties.topics) !== -1){
+                        layer.setIcon(L.AwesomeMarkers.icon({markerColor: 'gray'}));
                         layer.addTo(sqlserver);
-                    }
-                    if(jQuery.inArray("PostgreSQL", feature.properties.topics) !== -1){
+                    } else if(jQuery.inArray("PostgreSQL", feature.properties.topics) !== -1){
+                        layer.setIcon(L.AwesomeMarkers.icon({markerColor: 'lightblue'}));
                         layer.addTo(postgres);
-                    }
-                    if(jQuery.inArray("MongoDB", feature.properties.topics) !== -1){
+                    } else if(jQuery.inArray("MongoDB", feature.properties.topics) !== -1){
+                        layer.setIcon(L.AwesomeMarkers.icon({markerColor: 'green'}));
                         layer.addTo(mongo);
-                    }
-                    if(jQuery.inArray("IBM db2", feature.properties.topics) !== -1){
+                    } else if(jQuery.inArray("IBM db2", feature.properties.topics) !== -1){
+                        layer.setIcon(L.AwesomeMarkers.icon({markerColor: 'black'}));
                         layer.addTo(ibm);
-                    }
-                    if(jQuery.inArray("Access", feature.properties.topics) !== -1){
+                    } else if(jQuery.inArray("Access", feature.properties.topics) !== -1){
+                        layer.setIcon(L.AwesomeMarkers.icon({markerColor: 'darkred'}));
                         layer.addTo(access);
-                    }
-                    if(jQuery.inArray("Redis", feature.properties.topics) !== -1){
+                    } else if(jQuery.inArray("Redis", feature.properties.topics) !== -1){
+                        layer.setIcon(L.AwesomeMarkers.icon({markerColor: 'red'}));
                         layer.addTo(redis);
-                    }
-                    if(jQuery.inArray("Elasticsearch", feature.properties.topics) !== -1){
+                    } else if(jQuery.inArray("Elasticsearch", feature.properties.topics) !== -1){
+                        layer.setIcon(L.AwesomeMarkers.icon({markerColor: 'orange'}));
                         layer.addTo(elasticsearch);
-                    }
-                    if(jQuery.inArray("SQLite", feature.properties.topics) !== -1){
+                    } else if(jQuery.inArray("SQLite", feature.properties.topics) !== -1){
+                        layer.setIcon(L.AwesomeMarkers.icon({markerColor: 'blue'}));
                         layer.addTo(sqlite);
                     }
+
                     layer.bindPopup("<blockquote class=twitter-tweet data-cards=hidden data-conversation=none data-lang=es" + "><p lang="
                     + feature.properties.lang + "dir=ltr>" + feature.properties.text + "</p>&mdash;" + feature.properties.user_name +
                     "<a href=https://twitter.com/" + feature.properties.user_name + "/status/" + feature.properties.id + ">"
                     + feature.properties.date + "</a></blockquote>",{autoPan:false});
+
+                    markerClusters.addLayer(layer);
                 }
             });
+            map.addLayer(markerClusters);
+            L.control.layers(null, enginesOverlay, {collapsed: false}).addTo(map);
         });
 
         map.on('popupopen', function(e) {

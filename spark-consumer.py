@@ -34,13 +34,13 @@ def parse_json(df):
         topics.append('Oracle')
     if 'mysql' in text_lower:
         topics.append('MySQL')
-    if ('sql server' or 'sqlserver') in text_lower:
+    if 'sql server' or 'sqlserver' in text_lower:
         topics.append('SQL Server')
     if 'postgres' in text_lower:
         topics.append('PostgreSQL')
     if 'mongo' in text_lower:
         topics.append('MongoDB')
-    if 'ibm db2' in text_lower:
+    if 'ibm db2' or 'ibm' or 'db2' in text_lower:
         topics.append('IBM db2')
     if 'microsoft access' in text_lower:
         topics.append('Access')
