@@ -35,6 +35,33 @@
             }
         });
 
+        // Layers
+        var oracle = new L.layerGroup();
+        var mysql = new L.layerGroup();
+        var sqlserver = new L.layerGroup();
+        var postgres = new L.layerGroup();
+        var mongo = new L.layerGroup();
+        var ibm = new L.layerGroup();
+        var access = new L.layerGroup();
+        var redis = new L.layerGroup();
+        var elasticsearch = new L.layerGroup();
+        var sqlite = new L.layerGroup();
+        //var over = new L.layerGroup();
+
+        var enginesOverlay = {
+            //'<p id="selectAll">Seleccionar todo</p>': over,
+            '<i style="background: #D63E2A"></i>Oracle': oracle,
+            '<i style="background: #0067A3"></i>MySQL': mysql,
+            '<i style="background: #575757"></i>SQL Server': mysql,
+            '<i style="background: #89DBFF"></i>PostgreSQL': postgres,
+            '<i style="background: #72AF26"></i>MongoDB': mongo,
+            '<i style="background: #303030"></i>IBM db2': ibm,
+            '<i style="background: #A03336"></i>Microsoft Access': access,
+            '<i style="background: #D63E2A"></i>Redis': redis,
+            '<i style="background: orange"></i>Elasticsearch': elasticsearch,
+            '<i style="background: #38AADD"></i>SQLite': sqlite
+        };
+
         var map = L.map('map', {
             layers: [oracle, mysql, sqlserver, postgres, mongo, ibm, access, redis, elasticsearch, sqlite]
         }).setView([20.0,0.0], 2);
@@ -82,7 +109,7 @@
         // User location plugin
         map.addControl(L.control.locate({
             locateOptions: {
-                    maxZoom: 7
+                maxZoom: 7
         }}));
 
         // Fullscreen plugin
@@ -156,33 +183,6 @@
         legend.addTo(map);
         */
 
-        // Layers
-        var oracle = new L.layerGroup();
-        var mysql = new L.layerGroup();
-        var sqlserver = new L.layerGroup();
-        var postgres = new L.layerGroup();
-        var mongo = new L.layerGroup();
-        var ibm = new L.layerGroup();
-        var access = new L.layerGroup();
-        var redis = new L.layerGroup();
-        var elasticsearch = new L.layerGroup();
-        var sqlite = new L.layerGroup();
-        //var over = new L.layerGroup();
-
-        var enginesOverlay = {
-            //'<p id="selectAll">Seleccionar todo</p>': over,
-            '<i style="background: #D63E2A"></i>Oracle': oracle,
-            '<i style="background: #0067A3"></i>MySQL': mysql,
-            '<i style="background: #575757"></i>SQL Server': mysql,
-            '<i style="background: #89DBFF"></i>PostgreSQL': postgres,
-            '<i style="background: #72AF26"></i>MongoDB': mongo,
-            '<i style="background: #303030"></i>IBM db2': ibm,
-            '<i style="background: #A03336"></i>Microsoft Access': access,
-            '<i style="background: #D63E2A"></i>Redis': redis,
-            '<i style="background: orange"></i>Elasticsearch': elasticsearch,
-            '<i style="background: #38AADD"></i>SQLite': sqlite
-        };
-
         var markerClusters = L.markerClusterGroup();
 
         $.when(tweets).done(function() {
@@ -223,7 +223,7 @@
                     layer.bindPopup("<blockquote class=twitter-tweet data-cards=hidden data-conversation=none data-lang=es" + "><p lang="
                     + feature.properties.lang + "dir=ltr>" + feature.properties.text + "</p>&mdash;" + feature.properties.user_name +
                     "<a href=https://twitter.com/" + feature.properties.user_name + "/status/" + feature.properties.id + ">"
-                    + feature.properties.date + "</a></blockquote>",{autoPan:false});
+                    + feature.properties.date + "</a></blockquote>",{autoPan:false}).on('click', clickZoom);
 
                     markerClusters.addLayer(layer);
                 }
@@ -232,12 +232,32 @@
             L.control.layers(null, enginesOverlay, {collapsed: false}).addTo(map);
         });
 
+        function clickZoom(e) {
+            $.getScript("https://platform.twitter.com/widgets.js");
+            $(".leaflet-popup").hide();
+            map.setView(e.target.getLatLng(), 5);
+            setTimeout(function() {
+                $(".leaflet-popup").show();
+            }, 1000);
+        }
+
         map.on('popupopen', function(e) {
+            var px = map.project(e.popup._latlng);
+            px.y -= e.popup._container.clientHeight;
+            map.panTo(map.unproject(px));
+        });
+
+        /*
+        map.on('popupopen', function(e) {
+            $(".leaflet-popup").hide();
             $.getScript("https://platform.twitter.com/widgets.js");
             var px = map.project(e.popup._latlng);
             px.y -= e.popup._container.clientHeight;
-            map.panTo(map.unproject(px),{animate: true});
-        });
+            map.panTo(map.unproject(px));
+            setTimeout(function() {
+                $(".leaflet-popup").show();
+            }, 1000);
+        });*/
     </script>
 </body>
 </html>
