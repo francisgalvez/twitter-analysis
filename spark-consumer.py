@@ -13,6 +13,12 @@ import string
 import ast
 
 
+REDIS_POOL = None
+
+def init():
+    global REDIS_POOL
+    REDIS_POOL = redis.ConnectionPool(host='localhost', port=6379, decode_responses=True, db=0)
+
 def parse_json(df):
     id = df['id']
 
@@ -50,6 +56,9 @@ def parse_json(df):
         topics.append('Elasticsearch')
     if 'sqlite' in text_lower:
         topics.append('SQLite')
+
+    # Volvemos a guardar el texto a partir de 'text' (menos espacio en BD, no importa para mostrarlos)
+    text = df['text']
 
     if 'android' or 'Android' in df['source']:
         source = 'Android'
@@ -98,7 +107,7 @@ def get_coordinates(address):
     response = get_cached_location(str(decoded_location))
 
     if response is not None:
-        return ast.literal_eval(response)
+        return json.loads(response)
     else:
         api_response = requests.get(
             'http://www.datasciencetoolkit.org/maps/api/geocode/json?address=' + str(decoded_location))
@@ -124,12 +133,12 @@ def get_coordinates(address):
 
 
 def get_cached_location(key):
-    my_server = redis.Redis(connection_pool=redis.ConnectionPool(host='localhost', port=6379, decode_responses=True, db=0))
+    my_server = redis.Redis(connection_pool=REDIS_POOL)
     return my_server.get(key)
 
 
 def set_cached_location(name, longitude, latitude):
-    my_server = redis.Redis(connection_pool=redis.ConnectionPool(host='localhost', port=6379, decode_responses=True, db=0))
+    my_server = redis.Redis(connection_pool=REDIS_POOL)
     my_server.set(name, str([longitude, latitude]))
 
 
@@ -150,28 +159,29 @@ tweet_schema = StructType([
                     StructField('date', StringType(), False)
                     ])
 
-#  1. Create Spark configuration
-conf = SparkConf().setAppName('TwitterAnalysis').setMaster('local[*]')
+if __name__ == '__main__':
+    #  1. Create Spark configuration
+    conf = SparkConf().setAppName('TwitterAnalysis').setMaster('local[*]')
 
-# Create Spark Context to Connect Spark Cluster
-sc = SparkContext(conf=conf)
+    # Create Spark Context to Connect Spark Cluster
+    sc = SparkContext(conf=conf)
 
-# Set the Batch Interval is 10 sec of Streaming Context
-ssc = StreamingContext(sc, 10)
+    # Set the Batch Interval is 10 sec of Streaming Context
+    ssc = StreamingContext(sc, 10)
 
-spark = SparkSession \
-    .builder \
-    .appName('TwitterAnalysis') \
-    .config('spark.mongodb.output.uri', 'mongodb://127.0.0.1/twitter.coll') \
-    .getOrCreate()
+    spark = SparkSession \
+        .builder \
+        .appName('TwitterAnalysis') \
+        .config('spark.mongodb.output.uri', 'mongodb://127.0.0.1/twitter.coll') \
+        .getOrCreate()
 
-# Create Kafka Stream to Consume Data Comes From Twitter Topic
-kafkaStream = KafkaUtils.createDirectStream(ssc, topics=['twitter'], kafkaParams={'metadata.broker.list': 'localhost:9092'})
+    # Create Kafka Stream to Consume Data Comes From Twitter Topic
+    kafkaStream = KafkaUtils.createDirectStream(ssc, topics=['twitter'], kafkaParams={'metadata.broker.list': 'localhost:9092'})
 
-parsedJSON = kafkaStream.map(lambda x: parse_json(json.loads(x[1])))
+    parsedJSON = kafkaStream.map(lambda x: parse_json(json.loads(x[1])))
 
-parsedJSON.foreachRDD(lambda rdd: write_to_database(spark.createDataFrame(rdd, tweet_schema)))
+    parsedJSON.foreachRDD(lambda rdd: write_to_database(spark.createDataFrame(rdd, tweet_schema)))
 
-# Start Execution of Streams
-ssc.start()
-ssc.awaitTermination()
+    # Start Execution of Streams
+    ssc.start()
+    ssc.awaitTermination()

@@ -149,40 +149,6 @@
 
         map.addControl(new nightModeControl());
 
-        /*
-        function getColor(topic){
-            return  topic == "Oracle" ? 'red' :
-                    topic == "MySQL" ? 'darkblue' :
-                    topic == "SQL Server" ? 'gray' :
-                    topic == "PostgreSQL" ? 'lightblue' :
-                    topic == "MongoDB" ? 'green' :
-                    topic == "IBM DB2" ? 'black' :
-                    topic == "Access" ? 'darkred' :
-                    topic == "Redis" ? 'red' :
-                    topic == "Elasticsearch" ? 'beige' :
-                                        'blue';
-        }
-
-       
-        // Leyenda
-        var legend = L.control({position: 'bottomright'});
-
-        legend.onAdd = function (map) {
-
-            var div = L.DomUtil.create('ul', 'info legend');
-            topics = ["Oracle", "MySQL", "SQL Server", "PostgreSQL", "MongoDB", "IBM DB2", "Access", "Redis", "Elasticsearch", "SQLite"];
-
-            for (var i = 0; i < topics.length; i++) {
-                div.innerHTML +=
-                    '<li><br><i style="background:' + getColor(topics[i]) + '"></i> ' + topics[i] + '</li>';
-            }
-
-            return div;
-        };
-
-        legend.addTo(map);
-        */
-
         var markerClusters = L.markerClusterGroup();
 
         $.when(tweets).done(function() {
@@ -223,7 +189,7 @@
                     layer.bindPopup("<blockquote class=twitter-tweet data-cards=hidden data-conversation=none data-lang=es" + "><p lang="
                     + feature.properties.lang + "dir=ltr>" + feature.properties.text + "</p>&mdash;" + feature.properties.user_name +
                     "<a href=https://twitter.com/" + feature.properties.user_name + "/status/" + feature.properties.id + ">"
-                    + feature.properties.date + "</a></blockquote>",{autoPan:false}).on('click', clickZoom);
+                    + feature.properties.date + "</a></blockquote>").on('click', clickZoom);
 
                     markerClusters.addLayer(layer);
                 }

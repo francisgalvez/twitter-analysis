@@ -4,81 +4,67 @@ const geojson = require('geojson');
 
 const Tweet = require('../models/tweet');
 
-/*
-// Get all tweets (language optional)
-router.get('/:language?', async (req, res) => {
-    var language = req.params.language;
-    console.log(req.params);
+// http://tuproyecto.com/api/tweets/topics/:topiclist/condition/:operator/geolocation/:option
+// http://tuproyecto.com/api/tweets/topics/topic1,topic2,topic3/condition/and/geolocation/false
+
+// Get located/not located tweets
+router.get('/topics/:topiclist?/condition/:operator/geolocation/:option', async (req, res) => {
     var tweets;
 
-    if (language != null) {
-        tweets = await Tweet.find({ topics : { $all: [language] }}).lean();
+    if(req.params.topiclist == undefined){
+        tweets = await Tweet.find({ location : { $exists : req.params.option }}).lean();
     } else {
+        var engines = req.params.topiclist.split(",");
+
+        if(req.params.operator == "or"){
+            tweets = await Tweet.find({ topics : { $in: engines }, location : { $exists : req.params.option }}).lean();
+        } else {
+            tweets = await Tweet.find({ topics : { $all: engines }, location : { $exists : req.params.option }}).lean();
+        }
+    }
+ 
+    res.jsonp(geojson.parse(tweets, { Point: 'location' }));
+});
+
+// Get ALL tweets
+router.get('/topics/:topiclist?/condition/:operator/geolocation/all', async (req, res) => {
+    var tweets;
+
+    if(req.params.topiclist == undefined){
         tweets = await Tweet.find().lean();
-    }
- 
-    res.json(geojson.parse(tweets, { Point: 'location' }));
-});*/
-
-// Get tweets
-router.get('/', async (req, res) => {
-    var located = req.query.located;
-    var topic = req.query.topic;
-
-    // If false, we only find occurrences of both words together. If true, we find both topics.
-    var inclusive = req.query.inclusive;
-    var tweets;
-
-    if (located != undefined) {
-        if(topic == undefined){
-            tweets = await Tweet.find({ location : { $exists : located }}).lean();
-        } else {
-            if(!inclusive){
-                tweets = await Tweet.find({ topics : { $in: topic }, location : { $exists : located }}).lean();
-            } else {
-                tweets = await Tweet.find({ topics : { $all: topic }, location : { $exists : located }}).lean();
-            }
-        }
     } else {
-        if(topic == undefined){
-            tweets = await Tweet.find().lean();
+        var engines = req.params.topiclist.split(",");
+
+        if(req.params.operator == "or"){
+            tweets = await Tweet.find({ topics : { $in: engines } }).lean();
         } else {
-            if(!inclusive){
-                tweets = await Tweet.find({ topics : { $in: topic }}).lean();
-            } else {
-                tweets = await Tweet.find({ topics : { $all: topic }}).lean();
-            }
+            tweets = await Tweet.find({ topics : { $all: engines } }).lean();
         }
     }
  
     res.jsonp(geojson.parse(tweets, { Point: 'location' }));
 });
 
-// Get located tweets
+// Get ALL located tweets
 router.get('/located', async (req, res) => {
-    var topic = req.query.topic;
-
-    // If false, we only find occurrences of both words together. If true, we find both topics.
-    var inclusive = req.query.inclusive;
     var tweets;
 
-    if(topic == undefined){
-        tweets = await Tweet.find({ location : { $exists : true }}).lean();
-    } else {
-        if(!inclusive){
-            tweets = await Tweet.find({ topics : { $in: topic }, location : { $exists : true }}).lean();
-        } else {
-            tweets = await Tweet.find({ topics : { $all: topic }, location : { $exists : true }}).lean();
-        }
-    }
+    tweets = await Tweet.find({ location : { $exists : true }}).lean();
  
     res.jsonp(geojson.parse(tweets, { Point: 'location' }));
 });
 
-// Get located tweets from the last two hours
+// Get located tweets from the last X hours
+router.get('/located/since/:hours', async (req, res) => {
+    var tweets;
 
-// Get located tweets from the last four hours
+    // Llamada a la BD correspondiente
 
-// Get located tweets from the last eight hours
+    tweets = await Tweet.find({ location : { $exists : true }}).lean();
+ 
+    res.jsonp(geojson.parse(tweets, { Point: 'location' }));
+});
+
+// Endpoint interno para borrar tweets más antiguos
 
 module.exports = router;
