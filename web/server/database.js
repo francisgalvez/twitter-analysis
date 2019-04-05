@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const URI = 'mongodb://localhost/twitter';
+const URI = 'mongodb://mongo:271017/twitter';
 
 mongoose.connect(URI, { useCreateIndex: true, useNewUrlParser: true })
     .then(db => console.log('DB is connected'))
