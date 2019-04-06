@@ -4,6 +4,7 @@ from pyspark.streaming.kafka import KafkaUtils
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
 from pyspark.sql.types import StructType, StructField, StringType, BooleanType, ArrayType, DoubleType
+from hosts import redis_host, redis_port, mongo_host, mongo_port
 import json
 from datetime import datetime
 import redis
@@ -17,7 +18,7 @@ REDIS_POOL = None
 
 def init():
     global REDIS_POOL
-    REDIS_POOL = redis.ConnectionPool(host='localhost', port=6379, decode_responses=True, db=0)
+    REDIS_POOL = redis.ConnectionPool(host=redis_host, port=redis_port, decode_responses=True, db=0)
 
 def parse_json(df):
     id = df['id']
@@ -40,13 +41,17 @@ def parse_json(df):
         topics.append('Oracle')
     if 'mysql' in text_lower:
         topics.append('MySQL')
-    if 'sql server' or 'sqlserver' in text_lower:
+    if 'sql server' in text_lower:
+        topics.append('SQL Server')
+    if 'sqlserver' in text_lower:
         topics.append('SQL Server')
     if 'postgres' in text_lower:
         topics.append('PostgreSQL')
     if 'mongo' in text_lower:
         topics.append('MongoDB')
-    if 'ibm db2' or 'ibm' or 'db2' in text_lower:
+    if 'ibm' in text_lower:
+        topics.append('IBM db2')
+    if 'db2' in text_lower:
         topics.append('IBM db2')
     if 'microsoft access' in text_lower:
         topics.append('Access')
@@ -143,7 +148,15 @@ def set_cached_location(name, longitude, latitude):
 
 
 def write_to_database(tweet):
-    tweet.write.format('com.mongodb.spark.sql.DefaultSource').mode('append').save()
+    # Write to main database
+    tweet.write.format('com.mongodb.spark.sql.DefaultSource').mode('append').option('uri', 'mongodb://127.0.0.1/twitter.coll').save()
+
+    # Write to time databases
+    tweet.write.format("com.mongodb.spark.sql.DefaultSource").mode("append").option('uri', 'mongodb://127.0.0.1/twitter_2hours.coll').save()
+
+    tweet.write.format("com.mongodb.spark.sql.DefaultSource").mode("append").option('uri', 'mongodb://127.0.0.1/twitter_4hours.coll').save()
+
+    tweet.write.format("com.mongodb.spark.sql.DefaultSource").mode("append").option('uri', 'mongodb://127.0.0.1/twitter_6hours.coll').save()
 
 
 tweet_schema = StructType([
@@ -172,7 +185,7 @@ if __name__ == '__main__':
     spark = SparkSession \
         .builder \
         .appName('TwitterAnalysis') \
-        .config('spark.mongodb.output.uri', 'mongodb://127.0.0.1/twitter.coll') \
+        .config('spark.mongodb.output.uri') \
         .getOrCreate()
 
     # Create Kafka Stream to Consume Data Comes From Twitter Topic

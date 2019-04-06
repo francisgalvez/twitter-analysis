@@ -16,4 +16,4 @@ const TweetSchema = new Schema({
 
 TweetSchema.index({ topics: 1 });
 
-module.exports = mongoose.model('Tweet', TweetSchema, 'coll');
+//module.exports = mongoose.model('Tweet', TweetSchema, 'coll');
