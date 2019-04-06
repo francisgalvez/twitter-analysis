@@ -58,6 +58,9 @@ config/env/local-*.js
 modules/*/client/scss/*.css
 modules/*/client/less/*.css
 
+# Docker
+web/data
+
 # General
 *.log
 *.csv
