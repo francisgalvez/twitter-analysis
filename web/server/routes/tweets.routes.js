@@ -7,16 +7,16 @@ const mongoose = require('mongoose');
 const databases = require('../databases.json');
 
 
-var db = mongoose.createConnection(databases.mainDb.URI, { useNewUrlParser: true });
+var db = mongoose.createConnection(databases.mainDb.URI + databases.mainDb.database_name, { useNewUrlParser: true });
 var Tweet = db.model('Tweet', mongoose.Schema(schema.TweetSchema), 'coll');
 
-var db2h = mongoose.createConnection(databases.twoHoursDb.URI, { useNewUrlParser: true });
+var db2h = mongoose.createConnection(databases.twoHoursDb.URI + databases.twoHoursDb.database_name, { useNewUrlParser: true });
 var Tweet_2h = db2h.model('Tweet_2h', mongoose.Schema(schema.TweetSchema), 'coll');
 
-var db4h = mongoose.createConnection(databases.fourHoursDb.URI, { useNewUrlParser: true });
+var db4h = mongoose.createConnection(databases.fourHoursDb.URI + databases.fourHoursDb.database_name, { useNewUrlParser: true });
 var Tweet_4h = db4h.model('Tweet_4h', mongoose.Schema(schema.TweetSchema), 'coll');
 
-var db6h = mongoose.createConnection(databases.fourHoursDb.URI, { useNewUrlParser: true });
+var db6h = mongoose.createConnection(databases.fourHoursDb.URI + databases.sixHoursDb.database_name, { useNewUrlParser: true });
 var Tweet_6h = db6h.model('Tweet_6h', mongoose.Schema(schema.TweetSchema), 'coll');
 
 // http://tuproyecto.com/api/tweets/topics/:topiclist/condition/:operator/geolocation/:option

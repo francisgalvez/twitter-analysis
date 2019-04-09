@@ -2,11 +2,11 @@ from pymongo import MongoClient
 import requests
 import time
 
-databases = requests.get(url = 'http://localhost:3000/api/tweets/databases').json()
+databases = requests.get(url = 'app://app:3000/api/tweets/databases').json()
 
-db_2h = MongoClient(databases.twoHoursDb.URI)
-db_4h = MongoClient(databases.fourHoursDb.URI)
-db_6h = MongoClient(databases.sixHoursDb.URI)
+db_2h = MongoClient(databases.twoHoursDb.URI)[databases.twoHoursDb.database_name]
+db_4h = MongoClient(databases.fourHoursDb.URI)[databases.fourHoursDb.database_name]
+db_6h = MongoClient(databases.sixHoursDb.URI)[databases.sixHoursDb.database_name]
 
 actual_timestamp = time.time()
 two_hours_edge = actual_timestamp - databases.twoHoursDb.time*60*1000
