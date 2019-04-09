@@ -76,7 +76,7 @@ build/
 
 # Personal
 **secret.py
-**twitter_plot.html
+hosts.py
+databases.json
 spark-warehouse
 __pycache__
-
