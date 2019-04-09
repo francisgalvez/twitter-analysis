@@ -106,11 +106,16 @@ router.post('/delete/db/:db', async (req, res) => {
     sixHoursEdge = timestamp - databases.sixHoursDb.time*60*1000;
 
     if(db == databases.twoHoursDb.database_name) {
-        await Tweet_2h.deleteMany({ timestamp : { $lte: timestamp - twoHoursEdge }});
+        await Tweet_2h.deleteMany({ timestamp : { $lte: twoHoursEdge.toString() }});
+    	res.sendStatus(200);
     } else if (db == databases.fourHoursDb.database_name) {
-        await Tweet_4h.deleteMany({ timestamp : { $lte: timestamp - fourHoursEdge }});
+        await Tweet_4h.deleteMany({ timestamp : { $lte: fourHoursEdge.toString() }});
+	res.sendStatus(200);
     } else if (db == databases.sixHoursDb.database_name) {
-        await Tweet_6h.deleteMany({ timestamp : { $lte: timestamp - sixHoursEdge }});
+        await Tweet_6h.deleteMany({ timestamp : { $lte: sixHoursEdge.toString() }});
+	res.sendStatus(200);
+    } else {
+	res.sendStatus(400);
     }
 });
 
