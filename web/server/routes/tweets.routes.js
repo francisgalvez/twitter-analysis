@@ -97,5 +97,21 @@ router.get('/databases', async (req, res) => {
 });
 
 // Endpoint interno para borrar tweets más antiguos
+router.post('/delete/db/:db', async (req, res) => {
+    var db = req.params.db;
+    var timestamp = Date.now();
+
+    twoHoursEdge = timestamp - databases.twoHoursDb.time*60*1000;
+    fourHoursEdge = timestamp - databases.fourHoursDb.time*60*1000;
+    sixHoursEdge = timestamp - databases.sixHoursDb.time*60*1000;
+
+    if(db == databases.twoHoursDb.database_name) {
+        await Tweet_2h.deleteMany({ timestamp : { $lte: timestamp - twoHoursEdge }});
+    } else if (db == databases.fourHoursDb.database_name) {
+        await Tweet_4h.deleteMany({ timestamp : { $lte: timestamp - fourHoursEdge }});
+    } else if (db == databases.sixHoursDb.database_name) {
+        await Tweet_6h.deleteMany({ timestamp : { $lte: timestamp - sixHoursEdge }});
+    }
+});
 
 module.exports = router;
