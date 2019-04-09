@@ -77,7 +77,7 @@ build/
 # Personal
 **secret.py
 hosts.py
-databases.json
+#databases.json
 spark-warehouse
 __pycache__
 temp
