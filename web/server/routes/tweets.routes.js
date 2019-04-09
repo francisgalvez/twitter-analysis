@@ -4,7 +4,7 @@ const geojson = require('geojson');
 
 const schema = require('../models/tweet')
 const mongoose = require('mongoose');
-const databases = require('../database.json');
+const databases = require('../databases.json');
 
 
 var db = mongoose.createConnection(databases.mainDb.URI, { useNewUrlParser: true });
