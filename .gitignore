@@ -80,3 +80,4 @@ hosts.py
 databases.json
 spark-warehouse
 __pycache__
+temp
