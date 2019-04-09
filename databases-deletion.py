@@ -1,10 +1,10 @@
 import requests
 
-databases = requests.get(url = 'app://app:3000/api/tweets/databases').json()
+databases = requests.get(url = '192.168.67.11:3000/api/tweets/databases').json()
 
-requests.post(url = 'app://app:3000/api/tweets/delete/bd/' + databases.twoHoursDb.database_name)
-requests.post(url = 'app://app:3000/api/tweets/delete/bd/' + databases.fourHoursDb.database_name)
-requests.post(url = 'app://app:3000/api/tweets/delete/bd/' + databases.sixHoursDb.database_name)
+requests.post(url = '192.168.67.11:3000/api/tweets/delete/bd/' + databases.twoHoursDb.database_name)
+requests.post(url = '192.168.67.11:3000/api/tweets/delete/bd/' + databases.fourHoursDb.database_name)
+requests.post(url = '192.168.67.11:3000/api/tweets/delete/bd/' + databases.sixHoursDb.database_name)
 
 """
 db_2h = MongoClient(databases.twoHoursDb.URI)[databases.twoHoursDb.database_name]
