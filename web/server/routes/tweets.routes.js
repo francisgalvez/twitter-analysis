@@ -19,9 +19,6 @@ var Tweet_4h = db4h.model('Tweet_4h', mongoose.Schema(schema.TweetSchema), 'coll
 var db6h = mongoose.createConnection(databases.fourHoursDb.URI + databases.sixHoursDb.database_name, { useNewUrlParser: true });
 var Tweet_6h = db6h.model('Tweet_6h', mongoose.Schema(schema.TweetSchema), 'coll');
 
-// http://tuproyecto.com/api/tweets/topics/:topiclist/condition/:operator/geolocation/:option
-// http://tuproyecto.com/api/tweets/topics/topic1,topic2,topic3/condition/and/geolocation/false
-
 // Get ALL tweets
 router.get('/all', async (req, res) => {
     var tweets = await Tweet.find().lean();
@@ -96,26 +93,22 @@ router.get('/databases', async (req, res) => {
     res.jsonp(databases);
 });
 
-// Endpoint interno para borrar tweets más antiguos
+// Endpoint interno para borrar tweets más antiguos de la franja horaria correspondiente
 router.post('/delete/db/:db', async (req, res) => {
     var db = req.params.db;
     var timestamp = Date.now();
 
-    twoHoursEdge = timestamp - databases.twoHoursDb.time*60*1000;
-    fourHoursEdge = timestamp - databases.fourHoursDb.time*60*1000;
-    sixHoursEdge = timestamp - databases.sixHoursDb.time*60*1000;
-
     if(db == databases.twoHoursDb.database_name) {
-        await Tweet_2h.deleteMany({ timestamp : { $lte: twoHoursEdge.toString() }});
+        await Tweet_2h.deleteMany({ timestamp : { $lte: (timestamp - databases.twoHoursDb.time*60*1000).toString() }});
     	res.sendStatus(200);
     } else if (db == databases.fourHoursDb.database_name) {
-        await Tweet_4h.deleteMany({ timestamp : { $lte: fourHoursEdge.toString() }});
-	res.sendStatus(200);
+        await Tweet_4h.deleteMany({ timestamp : { $lte: (timestamp - databases.fourHoursDb.time*60*1000).toString() }});
+	    res.sendStatus(200);
     } else if (db == databases.sixHoursDb.database_name) {
-        await Tweet_6h.deleteMany({ timestamp : { $lte: sixHoursEdge.toString() }});
-	res.sendStatus(200);
+        await Tweet_6h.deleteMany({ timestamp : { $lte: (timestamp - databases.sixHoursDb.time*60*1000).toString() }});
+	    res.sendStatus(200);
     } else {
-	res.sendStatus(400);
+	    res.sendStatus(400);
     }
 });
 
