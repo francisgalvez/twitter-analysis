@@ -4,25 +4,46 @@
     <meta charset="utf-8" />
     <title>Twitter Map</title>
     <meta name="twitter:dnt" content="on">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="css/MarkerCluster.css" />
     <link rel="stylesheet" type="text/css" href="css/MarkerCluster.Default.css" />
     <link rel="stylesheet" href="css/leaflet.awesome-markers.css">
-    <link rel="stylesheet" href="css/styles.min.css" />
+    <link rel="stylesheet" href="css/styles.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
     <link rel="stylesheet" href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css"/>
+    <link rel="stylesheet" href="css/leaflet-search.css"/>
     <script src="js/jquery-3.3.1.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
     <script src='js/leaflet.markercluster.js'></script>
     <script src="js/leaflet.featuregroup.subgroup.js"></script>
     <script src="js/leaflet.awesome-markers.min.js"></script>
     <script src="js/leaflet-timeline-slider.min.js"></script>
+    <script src="js/leaflet-search.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
     <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 </head>
 <body>
-    <div id="map"></div>
-    <script src="js/map.loader.min.js"></script>
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="container-fluid">
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li>
+                    <a>Menu item 1</a>
+                    </li>
+                    <li>
+                    <a>Menu item 2</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div id="container">
+        <div id="map"></div>
+    </div>
+    <script src="js/map.loader.js"></script>
 </body>
 </html>

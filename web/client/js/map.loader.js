@@ -72,52 +72,59 @@ getDataAddMarkers = function ({label, value, map, exclamation}){
     }
 
     tweets = $.ajax({
-        url: "http://localhost:3000/api/tweets/located/since/" + hours,
+        url: "http://localhost:3000/api/tweets/geolocation/true/since/" + hours,
         dataType: "json",
         error: function(xhr) {
             console.log(xhr.statusText);
         }
     });
 
+    var withTopic;
+
     $.when(tweets).done(function() {
         var geojson = L.geoJson(tweets.responseJSON, {
             onEachFeature: function (feature, layer) {
+                withTopic = true;
                 if(jQuery.inArray("Oracle", feature.properties.topics) !== -1){
-                    layer.setIcon(L.AwesomeMarkers.icon({ markerColor: 'red'}));
+                    layer.setIcon(L.AwesomeMarkers.icon({icon: 'null', markerColor: 'red'}));
                     layer.addTo(oracle);
                 } else if(jQuery.inArray("MySQL", feature.properties.topics) !== -1){
-                    layer.setIcon(L.AwesomeMarkers.icon({markerColor: 'darkblue'}));
+                    layer.setIcon(L.AwesomeMarkers.icon({icon: 'null', markerColor: 'darkblue'}));
                     layer.addTo(mysql);
                 } else if(jQuery.inArray("SQL Server", feature.properties.topics) !== -1){
-                    layer.setIcon(L.AwesomeMarkers.icon({markerColor: 'gray'}));
+                    layer.setIcon(L.AwesomeMarkers.icon({icon: 'null', markerColor: 'gray'}));
                     layer.addTo(sqlserver);
                 } else if(jQuery.inArray("PostgreSQL", feature.properties.topics) !== -1){
-                    layer.setIcon(L.AwesomeMarkers.icon({markerColor: 'lightblue'}));
+                    layer.setIcon(L.AwesomeMarkers.icon({icon: 'null', markerColor: 'lightblue'}));
                     layer.addTo(postgres);
                 } else if(jQuery.inArray("MongoDB", feature.properties.topics) !== -1){
-                    layer.setIcon(L.AwesomeMarkers.icon({markerColor: 'green'}));
+                    layer.setIcon(L.AwesomeMarkers.icon({icon: 'null', markerColor: 'green'}));
                     layer.addTo(mongo);
                 } else if(jQuery.inArray("IBM db2", feature.properties.topics) !== -1){
-                    layer.setIcon(L.AwesomeMarkers.icon({markerColor: 'black'}));
+                    layer.setIcon(L.AwesomeMarkers.icon({icon: 'null', markerColor: 'black'}));
                     layer.addTo(ibm);
                 } else if(jQuery.inArray("Access", feature.properties.topics) !== -1){
-                    layer.setIcon(L.AwesomeMarkers.icon({markerColor: 'darkred'}));
+                    layer.setIcon(L.AwesomeMarkers.icon({icon: 'null', markerColor: 'darkred'}));
                     layer.addTo(access);
                 } else if(jQuery.inArray("Redis", feature.properties.topics) !== -1){
-                    layer.setIcon(L.AwesomeMarkers.icon({markerColor: 'red'}));
+                    layer.setIcon(L.AwesomeMarkers.icon({icon: 'null', markerColor: 'red'}));
                     layer.addTo(redis);
                 } else if(jQuery.inArray("Elasticsearch", feature.properties.topics) !== -1){
-                    layer.setIcon(L.AwesomeMarkers.icon({markerColor: 'orange'}));
+                    layer.setIcon(L.AwesomeMarkers.icon({icon: 'null', markerColor: 'orange'}));
                     layer.addTo(elasticsearch);
                 } else if(jQuery.inArray("SQLite", feature.properties.topics) !== -1){
-                    layer.setIcon(L.AwesomeMarkers.icon({markerColor: 'blue'}));
+                    layer.setIcon(L.AwesomeMarkers.icon({icon: 'null', markerColor: 'blue'}));
                     layer.addTo(sqlite);
+                } else {
+                    withTopic = false;
                 }
-    
-                layer.bindPopup("<blockquote class=twitter-tweet data-cards=hidden data-conversation=none data-lang=es" + "><p lang="
-                + feature.properties.lang + "dir=ltr>" + feature.properties.text + "</p>&mdash;" + feature.properties.user_name +
-                "<a href=https://twitter.com/" + feature.properties.user_name + "/status/" + feature.properties.id + ">"
-                + feature.properties.date + "</a></blockquote>").on('click', clickZoom);
+
+                if(withTopic){
+                    layer.bindPopup("<blockquote class=twitter-tweet data-cards=hidden data-conversation=none data-lang=es" + "><p lang="
+                    + feature.properties.lang + "dir=ltr>" + feature.properties.text + "</p>&mdash;" + feature.properties.user_name +
+                    "<a href=https://twitter.com/" + feature.properties.user_name + "/status/" + feature.properties.id + ">"
+                    + feature.properties.date + "</a></blockquote>", {minWidth: 215, autoClose: true, closeOnClick: true}).on('click', clickZoom);
+                }
             }
         });
     });
@@ -174,17 +181,33 @@ var nightModeControl = L.Control.extend({
 
 map.addControl(new nightModeControl());
 
+map.addControl(new L.Control.Search({
+    url: 'https://nominatim.openstreetmap.org/search?format=json&q={s}',
+    jsonpParam: 'json_callback',
+    propertyName: 'display_name',
+    propertyLoc: ['lat','lon'],
+    marker: {},
+    hideMarkerOnCollapse: true,
+    autoCollapse: false,
+    autoType: false,
+    minLength: 2,
+    zoom: 8,
+    textErr: 'Ubicación no encontrada',
+    textCancel: 'Cancelar',
+    textPlaceholder: 'Buscar ubicación'
+}));
+
 function clickZoom(e) {
     $.getScript("https://platform.twitter.com/widgets.js");
     $(".leaflet-popup").hide();
-    map.setView(e.target.getLatLng(), 5);
+    //map.setView(e.target.getLatLng());
     setTimeout(function() {
         $(".leaflet-popup").show();
-    }, 1000);
+    }, 1050);
 }
 
 map.on('popupopen', function(e) {
     var px = map.project(e.popup._latlng);
-    px.y -= e.popup._container.clientHeight;
-    map.panTo(map.unproject(px));
+    px.y -= e.popup._container.clientHeight/2;
+    map.panTo(map.unproject(px), {animate: true});
 });

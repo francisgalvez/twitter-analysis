@@ -2,114 +2,258 @@ const express = require('express');
 const router = express.Router();
 const geojson = require('geojson');
 
-const schema = require('../models/tweet')
+const tweetSchema = require('../models/tweet');
+const databasesSchema = require('../models/databases');
 const mongoose = require('mongoose');
-const databases = require('../databases.json');
+var elasticsearch = require('elasticsearch');
 
+var settings = mongoose.createConnection('mongodb://127.0.0.1:27017/settings', { useNewUrlParser: true });
+var databases = settings.model('Databases', mongoose.Schema(databasesSchema.DatabasesSchema), 'databases');
 
-var db = mongoose.createConnection(databases.mainDb.URI + databases.mainDb.database_name, { useNewUrlParser: true });
-var Tweet = db.model('Tweet', mongoose.Schema(schema.TweetSchema), 'coll');
-
-var db2h = mongoose.createConnection(databases.twoHoursDb.URI + databases.twoHoursDb.database_name, { useNewUrlParser: true });
-var Tweet_2h = db2h.model('Tweet_2h', mongoose.Schema(schema.TweetSchema), 'coll');
-
-var db4h = mongoose.createConnection(databases.fourHoursDb.URI + databases.fourHoursDb.database_name, { useNewUrlParser: true });
-var Tweet_4h = db4h.model('Tweet_4h', mongoose.Schema(schema.TweetSchema), 'coll');
-
-var db6h = mongoose.createConnection(databases.fourHoursDb.URI + databases.sixHoursDb.database_name, { useNewUrlParser: true });
-var Tweet_6h = db6h.model('Tweet_6h', mongoose.Schema(schema.TweetSchema), 'coll');
+var db;
+var Tweets = {};
+var dbs = databases.find().lean().exec(function (err, docs) {
+    for (var database in docs){
+        if(docs[database].engine == "elasticsearch"){
+            Tweets[docs[database].name] = new elasticsearch.Client({host: docs[database].URI, log: 'trace'});
+        } else if (docs[database].engine == "mongo"){
+            db = mongoose.createConnection(docs[database].URI + docs[database].database_name, { useNewUrlParser: true });
+            Tweets[docs[database].name] = db.model('Tweet', mongoose.Schema(tweetSchema.TweetSchema), docs[database].collection);
+        }
+    }
+});
 
 // Get ALL tweets
 router.get('/all', async (req, res) => {
-    var tweets = await Tweet.find().lean();
+    var response = await Tweets["mainDbES"].search({
+                                                    index: 'twitter',
+                                                    type: 'tweet',
+                                                    body: {
+                                                    query: {
+                                                        match_all: {}
+                                                    },
+                                                    size: req.query.size
+                                                    }
+                                            });
+
+    var tweets = response.hits.hits.map(hit => hit._source);
  
     res.jsonp(geojson.parse(tweets, { Point: 'location' }));
 });
 
-// Get ALL located tweets
-router.get('/located', async (req, res) => {
-    var tweets;
+// Get located or not located tweets
+router.get('/geolocation/:option', async (req, res) => {
+    var response;
 
-    tweets = await Tweet.find({ location : { $exists : true }}).lean();
+    if(req.params.option == "true"){
+        response = await Tweets["mainDbES"].search({
+                index: 'twitter',
+                type: 'tweet',
+                body: {
+                    query: {
+                        exists : { "field" : "location" }
+                    },
+                    size: req.query.size
+                }
+            });
+    } else if (req.params.option == "false") {
+        response = await Tweets["mainDbES"].search({
+            index: 'twitter',
+            type: 'tweet',
+            body: {
+                query: {
+                    bool: {
+                        must_not: {
+                            exists: {"field": "location"}
+                        }
+                    }
+                },
+                size: req.query.size
+            }
+        });
+    }
+
+    var tweets = response.hits.hits.map(hit => hit._source);
  
     res.jsonp(geojson.parse(tweets, { Point: 'location' }));
 });
 
 // Get tweets with options
-router.get('/topics/:topiclist?/condition/:operator/geolocation/:option', async (req, res) => {
-    var tweets;
+router.get('/topics/:topiclist/condition/:operator/geolocation/:option?', async (req, res) => {
+    var response;
 
-    if(req.params.topiclist == undefined){
-        tweets = await Tweet.find({ location : { $exists : req.params.option }}).lean();
-    } else {
-        var engines = req.params.topiclist.split(",");
-
-        if(req.params.operator == "or"){
-            tweets = await Tweet.find({ topics : { $in: engines }, location : { $exists : req.params.option }}).lean();
+    if(req.params.operator == "or"){
+        if(req.params.option == "true"){
+            response = await Tweets["mainDbES"].search({
+                index: 'twitter',
+                type: 'tweet',
+                body: {
+                    query: {
+                        bool: {
+                            must: [{
+                                exists : { "field" : "location" }
+                            }, 
+                            {
+                                match: { topics: req.params.topiclist }
+                            }]
+                        },
+                        
+                    },
+                    size: req.query.size
+                }
+            });
+        } else if(req.params.option == "false") {
+            response = await Tweets["mainDbES"].search({
+                index: 'twitter',
+                type: 'tweet',
+                body: {
+                    query: {
+                        bool: {
+                            must_not: {
+                                exists: {"field": "location"}
+                            },
+                            must: {
+                                match: { topics: req.params.topiclist }
+                            }
+                        }
+                    },
+                    size: req.query.size
+                }
+            });
         } else {
-            tweets = await Tweet.find({ topics : { $all: engines }, location : { $exists : req.params.option }}).lean();
+            response = await Tweets["mainDbES"].search({
+                index: 'twitter',
+                type: 'tweet',
+                body: {
+                    query: {
+                        match: { topics: req.params.topiclist }
+                    },
+                    size: req.query.size
+                }
+            });
+        }
+
+    } else if (req.params.operator == "and") {
+        if(req.params.option == "true"){
+            response = await Tweets["mainDbES"].search({
+                index: 'twitter',
+                type: 'tweet',
+                body: {
+                    query: {
+                        bool: {
+                            must: [{
+                                exists: {"field": "location"}
+                            },
+                            {
+                                terms_set: {
+                                    topics: {
+                                        terms: req.params.topiclist.toLowerCase().split(","),
+                                        minimum_should_match_script: {
+                                            source: "params.num_terms"
+                                        }
+                                    }
+                                }
+                            }]
+                        }
+                    },
+                    size: req.query.size
+                }
+            });
+        } else if(req.params.option == "false") {
+            response = await Tweets["mainDbES"].search({
+                index: 'twitter',
+                type: 'tweet',
+                body: {
+                    query: {
+                        bool: {
+                            must: {
+                                terms_set: {
+                                    topics: {
+                                        terms: req.params.topiclist.toLowerCase().split(","),
+                                        minimum_should_match_script: {
+                                            source: "params.num_terms"
+                                        }
+                                    }
+                                }
+                            },
+                            must_not: { exists: {"field": "location"} }
+                        }
+                    },
+                    size: req.query.size
+                }
+            });
+        } else {
+            response = await Tweets["mainDbES"].search({
+                index: 'twitter',
+                type: 'tweet',
+                body: {
+                    query: {
+                        terms_set: {
+                            topics: {
+                                terms: req.params.topiclist.toLowerCase().split(","),
+                                minimum_should_match_script: {
+                                    source: "params.num_terms"
+                                }
+                            }
+                        }
+                    },
+                    size: req.query.size
+                }
+            });
         }
     }
+
+    var tweets = response.hits.hits.map(hit => hit._source);
  
     res.jsonp(geojson.parse(tweets, { Point: 'location' }));
 });
 
-// Get ALL tweets with options
-router.get('/topics/:topiclist?/condition/:operator/geolocation/all', async (req, res) => {
+// Get located or not located tweets since X hours
+router.get('/geolocation/:option/since/:hours', async (req, res) => {
     var tweets;
-
-    if(req.params.topiclist == undefined){
-        tweets = await Tweet.find().lean();
-    } else {
-        var engines = req.params.topiclist.split(",");
-
-        if(req.params.operator == "or"){
-            tweets = await Tweet.find({ topics : { $in: engines } }).lean();
-        } else {
-            tweets = await Tweet.find({ topics : { $all: engines } }).lean();
-        }
-    }
+    var option = (req.params.option == 'true');
+    
+    tweets = await Tweets[req.params.hours].find({ location : { $exists : option }}).lean();
  
     res.jsonp(geojson.parse(tweets, { Point: 'location' }));
 });
 
-// Get located tweets from the last X hours
-router.get('/located/since/:hours', async (req, res) => {
+// Get tweets with options since X hours
+router.get('/topics/:topiclist/condition/:operator/geolocation/:option/since/:hours', async (req, res) => {
     var tweets;
     var hours = req.params.hours;
+    var option = (req.params.option == 'true');
+    var engines = req.params.topiclist.split(",");
 
-    if(hours == "2hours"){
-        tweets = await Tweet_2h.find({ location : { $exists : true }}).lean();
-    } else if (hours == "4hours"){
-        tweets = await Tweet_4h.find({ location : { $exists : true }}).lean();
-    } else if (hours == "6hours"){
-        tweets = await Tweet_6h.find({ location : { $exists : true }}).lean();
+    if(req.params.operator == "or"){
+        if (req.params.option == "all") {
+            tweets = await Tweets[hours].find({ topics: { $in: engines }}).lean();
+        } else {
+            tweets = await Tweets[hours].find({ topics: { $in: engines }, location : { $exists : option }}).lean();
+        }
+    } else if (req.params.operator == "and") {
+        if (req.params.option == "all") {
+            tweets = await Tweets[hours].find({ topics: { $all: engines }}).lean();
+        } else {
+            tweets = await Tweets[hours].find({ topics: { $all: engines }, location : { $exists : option }}).lean();
+        }
     }
  
     res.jsonp(geojson.parse(tweets, { Point: 'location' }));
 });
 
 router.get('/databases', async (req, res) => { 
-    res.jsonp(databases);
+    response = await databases.find().lean();
+    res.jsonp(response);
 });
 
 // Endpoint interno para borrar tweets más antiguos de la franja horaria correspondiente
 router.post('/delete/db/:db', async (req, res) => {
-    var db = req.params.db;
+    var name = req.params.db;
     var timestamp = Date.now();
 
-    if(db == databases.twoHoursDb.database_name) {
-        await Tweet_2h.deleteMany({ timestamp : { $lte: (timestamp - databases.twoHoursDb.time*60*1000).toString() }});
-    	res.sendStatus(200);
-    } else if (db == databases.fourHoursDb.database_name) {
-        await Tweet_4h.deleteMany({ timestamp : { $lte: (timestamp - databases.fourHoursDb.time*60*1000).toString() }});
-	    res.sendStatus(200);
-    } else if (db == databases.sixHoursDb.database_name) {
-        await Tweet_6h.deleteMany({ timestamp : { $lte: (timestamp - databases.sixHoursDb.time*60*1000).toString() }});
-	    res.sendStatus(200);
-    } else {
-	    res.sendStatus(400);
-    }
+    await Tweets[name].deleteMany({ timestamp : { $lte: (timestamp - Tweets[name].db.time*60*1000).toString() }});
+    res.sendStatus(200);
 });
 
 module.exports = router;

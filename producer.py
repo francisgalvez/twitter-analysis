@@ -1,24 +1,6 @@
-"""
-    1. Iniciar Zookeeper:
-        bin/zookeeper-server-start.sh config/zookeeper.properties
-
-    2. Iniciar Kafka:
-        bin/kafka-server-start.sh config/server.properties
-
-    3. Iniciar Redis:
-        sudo service redis-server start
-
-    4. Iniciar producer
-
-    5. Iniciar consumer:
-        spark-submit --packages org.apache.spark:spark-streaming-kafka-0-8_2.11:2.2.0,org.mongodb.spark:mongo-spark-connector_2.11:2.4.0 spark-consumer.py
-
-    6. Ver topic desde el principio:
-        bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic twitter --from-beginning
-"""
-
 import tweepy
 from kafka import SimpleProducer, KafkaClient
+from pymongo import MongoClient
 from secret import consumer_key, consumer_secret, access_token, access_token_secret
 
 
@@ -52,7 +34,16 @@ if __name__ == '__main__':
     myStreamListener = MyStreamListener()
     myStream = tweepy.Stream(auth=api.auth, listener=myStreamListener)
 
-    keywords = ['Oracle Database', 'MySQL', 'SQL Server', 'SQLServer', 'PostgreSQL', 'Postgres', 'MongoDB', 'IBM Db2',
-                'Microsoft Access', 'Redis', 'Elasticsearch', 'SQLite']
+    # Connect to settings database and extract topics
+    client = MongoClient('mongodb://localhost:27017/')
+    topics = client['settings']['topics'].find()
+
+    keywords = []
+
+    for topic in topics:
+        for name in topic['topics']:
+            keywords.append(name)
+    
+    print(keywords)
     
     myStream.filter(track=keywords)

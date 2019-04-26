@@ -1,25 +1,25 @@
 {
     "mainDb": {
-        "URI": "mongodb://mongo:27017/",
+        "URI": "mongodb://127.0.0.1:27017/",
         "database_name": "twitter",
-	"time": null
+	    "time": null
     },
 
     "twoHoursDb": {
-        "URI": "mongodb://mongo:27017/",
+        "URI": "mongodb://127.0.0.1:27017/",
         "database_name": "twitter_2hours",
-	"time": 120
+	    "time": 120
     },
 
     "fourHoursDb": {
-        "URI": "mongodb://mongo:27017/",
-	"database_name": "twitter_4hours",
+        "URI": "mongodb://127.0.0.1:27017/",
+	    "database_name": "twitter_4hours",
         "time": 240
     },
 
     "sixHoursDb": {
-        "URI": "mongodb://mongo:27017/",
-	"database_name": "twitter_6hours",
+        "URI": "mongodb://127.0.0.1:27017/",
+	    "database_name": "twitter_6hours",
         "time": 360
     }
 }
