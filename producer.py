@@ -44,6 +44,4 @@ if __name__ == '__main__':
         for name in topic['topics']:
             keywords.append(name)
     
-    print(keywords)
-    
     myStream.filter(track=keywords)

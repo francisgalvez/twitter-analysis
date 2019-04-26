@@ -1,47 +1,46 @@
-html, body, #container {
+html, body {
     height: 100%;
-    overflow: hidden;
     width: 100%;
 }
 body {
-    /* height of .navbar, customize with @navbar-height variable */
-    padding-top: 50px;
+    font-family: 'Open Sans', sans-serif;
+    color: #40455B;
+    background: #fff;
+    font-size: 14px;
+    line-height: 22px;
+    overflow-x: visible;
+    padding-top: 55px;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Roboto', sans-serif;
 }
 .navbar {
     min-height: 50px;
 }
-#sidebar {
-    float: left;
-    height: 100%;
-    max-width: 100%;
-    width: 150px;
+.nav-item{
+    padding-right: 20px;
+}
+.container{
+    padding-top: 60px;
+}
+span{
+    font-weight: bold;
+}
+.footer{
+    padding: 15px 0px;
 }
 #map {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     height: 100%;
     width: auto;
 }
-/*
-html, body {
-    margin: 0;
-    height: 100%;
-}
-#map {
-    width:100%;
-    height:100%;
-}*/
-.legend {
-    color: #555;
-    background: #fff;
-    padding: 0px 15px 18px 15px;
-    border-radius: 5px;
-    list-style-type: none;
-    -moz-column-count: 5;
-    -moz-column-gap: 20px;
-    -webkit-column-count: 5;
-    -webkit-column-gap: 20px;
-    column-count: 5;
-    column-gap: 20px;
+.leaflet-top{
+    padding-top: 10px;
 }
 .leaflet-control-layers i {
     width: 18px;
@@ -62,4 +61,31 @@ html, body {
 }
 .leaflet-fade-anim .leaflet-tile,.leaflet-zoom-anim .leaflet-zoom-animated { 
     will-change: auto !important; 
+}
+pre {
+    padding: 15px;
+    border-radius: 5px; 
+    -moz-border-radius: 5px; 
+    -webkit-border-radius: 5px;
+    border: 1px solid #BCBEC0;
+    background: #F1F3F5;
+    font:12px Monaco,Consolas,"Andale  Mono","DejaVu Sans Mono",monospace
+}
+
+code {
+    border-radius: 5px; 
+    -moz-border-radius: 5px; 
+    -webkit-border-radius: 5px; 
+    border: 1px solid #BCBEC0;
+    padding: 2px;
+    font:12px Monaco,Consolas,"Andale  Mono","DejaVu Sans Mono",monospace
+}
+
+pre code {
+    border-radius: 0px; 
+    -moz-border-radius: 0px; 
+    -webkit-border-radius: 0px; 
+    border: 0px;
+    padding: 2px;
+    font:12px Monaco,Consolas,"Andale  Mono","DejaVu Sans Mono",monospace
 }

@@ -249,11 +249,14 @@ router.get('/databases', async (req, res) => {
 
 // Endpoint interno para borrar tweets más antiguos de la franja horaria correspondiente
 router.post('/delete/db/:db', async (req, res) => {
-    var name = req.params.db;
-    var timestamp = Date.now();
+    var dbName = req.params.db;
+    
+    var names = await databases.findOne({name: dbName}).lean();
+    var time = Date.now() - names.time*60*1000;
+    console.log(time);
 
-    await Tweets[name].deleteMany({ timestamp : { $lte: (timestamp - Tweets[name].db.time*60*1000).toString() }});
-    res.sendStatus(200);
+    var tweets = await Tweets[dbName].deleteMany({ timestamp : { $lte: time }});
+    res.send(tweets);
 });
 
 module.exports = router;
