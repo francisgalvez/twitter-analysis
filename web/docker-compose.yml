@@ -1,4 +1,4 @@
-version: "2"
+version: '2.2'
 
 services:
   app:
@@ -9,6 +9,24 @@ services:
       - "3000:3000"
     links:
       - mongo
+      - elasticsearch
+
+  elasticsearch:
+    container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.0.0
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./data:/data/elasticsearch
+    ports:
+      - "9200:9200"
+
   mongo:
     container_name: mongo
     image: mongo
@@ -16,6 +34,7 @@ services:
       - ./data:/data/db
     ports:
       - "27017:27017"
+
   redis:
     container_name: redis
     image: redis
@@ -23,3 +42,8 @@ services:
       - '6379:6379'
     volumes:
       - ./data:/data/cache
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.0.0
+    ports:
+      - "5601:5601"
