@@ -4,8 +4,8 @@ databases = [
                 {
                   "engine": "elasticsearch",
                   "name": "mainDbES", 
-                  "URI": "localhost:9200",
-                  "host": "localhost",
+                  "URI": "elasticsearch:9200",
+                  "host": "elasticsearch",
                   "port": "9200",
                   "index": "twitter",
                   "doc_type": "tweet"
