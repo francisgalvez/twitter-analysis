@@ -36,6 +36,11 @@ services:
       - ./data:/data/db
     ports:
       - "27017:27017"
+  
+  mongo-seed:
+  build: ./mongo-seed
+  links:
+    - mongo
 
   redis:
     container_name: redis
