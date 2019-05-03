@@ -4,8 +4,8 @@ databases = [
                 {
                   "engine": "elasticsearch",
                   "name": "mainDbES", 
-                  "URI": "localhost:9200",
-                  "host": "localhost",
+                  "URI": "192.168.67.15:9200",
+                  "host": "192.168.67.15",
                   "port": "9200",
                   "index": "twitter",
                   "doc_type": "tweet"
@@ -22,7 +22,7 @@ databases = [
                 {
                   "engine": "redis",
                   "name": "redis", 
-                  "URI": "localhost:6379/",
+                  "URI": "192.168.67.11:6379/",
                   "database_name": 0,
                   "host": "localhost",
                   "port": "6379"
