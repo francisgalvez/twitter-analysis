@@ -12,26 +12,18 @@ databases = [
                 },
 
                 {
-                  "engine": "mongo",
-                  "name": "mainDbMongo", 
-                  "URI": "mongodb://mongo:27017/",
-                  "database_name": "twitter",
-                  "collection": "coll"
-                },
-
-                {
                   "engine": "redis",
                   "name": "redis", 
-                  "URI": "localhost:6379/",
+                  "URI": "192.168.67.11:6379/",
                   "database_name": 0,
-                  "host": "localhost",
+                  "host": "192.168.67.11",
                   "port": "6379"
                 },
 
                 {
                   "engine": "mongo",
                   "name": "2hours",
-                  "URI": "mongodb://mongo:27017/",
+                  "URI": "192.168.67.11:27017/",
                   "database_name": "twitter_2hours",
                   "collection": "coll",
                   "time": 120
@@ -40,7 +32,7 @@ databases = [
                 {
                   "engine": "mongo",
                   "name": "4hours", 
-                  "URI": "mongodb://mongo:27017/",
+                  "URI": "192.168.67.11:27017/",
                   "database_name": "twitter_4hours",
                   "collection": "coll",
                   "time": 240
@@ -49,7 +41,7 @@ databases = [
                 {
                   "engine": "mongo",
                   "name": "6hours",
-                  "URI": "mongodb://mongo:27017/",
+                  "URI": "192.168.67.11:27017/",
                   "database_name": "twitter_6hours",
                   "collection": "coll",
                   "time": 360
@@ -99,7 +91,7 @@ topics = [
         ]
 
 # Crear BD "System"
-client = MongoClient('mongodb://mongo:27017/')
+client = MongoClient('192.168.67.11:27017/')
 dbnames = client.list_database_names()
 
 if 'settings' in dbnames:
