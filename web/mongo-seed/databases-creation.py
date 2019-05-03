@@ -23,7 +23,7 @@ databases = [
                 {
                   "engine": "mongo",
                   "name": "2hours",
-                  "URI": "192.168.67.11:27017/",
+                  "URI": "mongodb://192.168.67.11:27017/",
                   "database_name": "twitter_2hours",
                   "collection": "coll",
                   "time": 120
@@ -32,7 +32,7 @@ databases = [
                 {
                   "engine": "mongo",
                   "name": "4hours", 
-                  "URI": "192.168.67.11:27017/",
+                  "URI": "mongodb://192.168.67.11:27017/",
                   "database_name": "twitter_4hours",
                   "collection": "coll",
                   "time": 240
@@ -41,7 +41,7 @@ databases = [
                 {
                   "engine": "mongo",
                   "name": "6hours",
-                  "URI": "192.168.67.11:27017/",
+                  "URI": "mongodb://192.168.67.11:27017/",
                   "database_name": "twitter_6hours",
                   "collection": "coll",
                   "time": 360
@@ -91,7 +91,7 @@ topics = [
         ]
 
 # Crear BD "System"
-client = MongoClient('192.168.67.11:27017/')
+client = MongoClient('mongodb://mongo:27017/')
 dbnames = client.list_database_names()
 
 if 'settings' in dbnames:
