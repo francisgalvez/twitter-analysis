@@ -52,7 +52,7 @@ def parse_json(df, topics):
     elif 'Web Client' in df['source']:
         source = 'Web Client'
     else:
-        source = 'Unknown'
+        source = 'Otros'
 
     user_name = df['user']['screen_name']
 
@@ -126,12 +126,12 @@ def get_coordinates(address):
 
 
 def get_cached_location(key):
-    my_server = redis.Redis(connection_pool=redis.ConnectionPool(host='localhost', port=6379, decode_responses=True, db=0))
+    my_server = redis.Redis(connection_pool=redis.ConnectionPool(host='192.168.67.11', port=6379, decode_responses=True, db=0))
     return my_server.get(key)
 
 
 def set_cached_location(name, longitude, latitude):
-    my_server = redis.Redis(connection_pool=redis.ConnectionPool(host='localhost', port=6379, decode_responses=True, db=0))
+    my_server = redis.Redis(connection_pool=redis.ConnectionPool(host='192.168.67.11', port=6379, decode_responses=True, db=0))
     my_server.set(name, str([longitude, latitude]))
 
 
@@ -175,8 +175,8 @@ if __name__ == '__main__':
         .getOrCreate()
 
     # Conversion to Pandas DataFrame
-    topics = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("uri", "mongodb://127.0.0.1/settings.topics").load()
-    databases = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("uri", "mongodb://127.0.0.1/settings.databases").load()
+    topics = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("uri", "mongodb://192.168.67.11/settings.topics").load()
+    databases = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("uri", "mongodb://192.168.67.11/settings.databases").load()
 
     topics_pandas = topics.toPandas()
     databases_pandas = databases.toPandas()
