@@ -8,6 +8,13 @@ publicar los "mensajes" (tweets) al consumidor.
 La base de datos utilizada para almacenar los tweets es MongoDB, mientras que para almacenar datos sobre ubicaciones y 
 sus coordenadas se usa una caché Redis.
 
+## Antes de empezar
+Antes de ejecutar el trabajo Spark, se han de instalar los siguientes paquetes:
+    pip install redis
+    pip install unidecode
+    pip install pandas
+    pip install pymongo
+
 ## Puesta en marcha del trabajo Spark
 ### 1. Iniciar Zookeeper:
     bin/zookeeper-server-start.sh config/zookeeper.properties

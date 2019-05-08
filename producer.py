@@ -34,7 +34,7 @@ if __name__ == '__main__':
     myStream = tweepy.Stream(auth=api.auth, listener=myStreamListener)
 
     # Connect to settings database and extract topics
-    client = MongoClient('mongodb://localhost:27017/')
+    client = MongoClient('mongodb://192.168.67.11:27017/')
     topics = client['settings']['topics'].find()
 
     keywords = []
