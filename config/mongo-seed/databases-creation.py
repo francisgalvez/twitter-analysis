@@ -23,7 +23,7 @@ databases = [
                 {
                   "engine": "mongo",
                   "name": "2hours",
-                  "URI": "mongodb://21.0.0.11:27017/",
+                  "URI": "mongodb://21.0.0.11:27018/",
                   "database_name": "twitter_2hours",
                   "collection": "coll",
                   "time": 120
@@ -32,7 +32,7 @@ databases = [
                 {
                   "engine": "mongo",
                   "name": "4hours", 
-                  "URI": "mongodb://21.0.0.11:27017/",
+                  "URI": "mongodb://21.0.0.11:27019/",
                   "database_name": "twitter_4hours",
                   "collection": "coll",
                   "time": 240
@@ -41,7 +41,7 @@ databases = [
                 {
                   "engine": "mongo",
                   "name": "6hours",
-                  "URI": "mongodb://21.0.0.11:27017/",
+                  "URI": "mongodb://21.0.0.11:27020/",
                   "database_name": "twitter_6hours",
                   "collection": "coll",
                   "time": 360

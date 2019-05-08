@@ -1,28 +1,28 @@
 version: '3.3'
 
 services:
-  mongosystem:
+  mongo-system:
     image: mongo
     volumes:
       - ./data:/data/db/system
     ports:
       - "27017:27017"
 
-  mongo2h:
+  mongo-2hours:
     image: mongo
     volumes:
       - ./data:/data/db/2hours
     ports:
       - "27018:27018"
   
-  mongo4h:
+  mongo-4hours:
     image: mongo
     volumes:
       - ./data:/data/db/4hours
     ports:
       - "27019:27019"
   
-  mongo6h:
+  mongo-6hours:
     image: mongo
     volumes:
       - ./data:/data/db/6hours
