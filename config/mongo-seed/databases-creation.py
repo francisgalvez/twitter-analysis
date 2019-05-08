@@ -4,8 +4,8 @@ databases = [
                 {
                   "engine": "elasticsearch",
                   "name": "mainDbES", 
-                  "URI": "21.0.0.10:9200",
-                  "host": "21.0.0.10",
+                  "URI": "192.168.67.15:9200",
+                  "host": "192.168.67.15",
                   "port": "9200",
                   "index": "twitter",
                   "doc_type": "tweet"
@@ -14,16 +14,16 @@ databases = [
                 {
                   "engine": "redis",
                   "name": "redis", 
-                  "URI": "21.0.0.11:6379/",
+                  "URI": "192.168.67.13:6379/",
                   "database_name": 0,
-                  "host": "21.0.0.11",
+                  "host": "192.168.67.13",
                   "port": "6379"
                 },
 
                 {
                   "engine": "mongo",
                   "name": "2hours",
-                  "URI": "mongodb://21.0.0.11:27018/",
+                  "URI": "mongodb://192.168.67.13:27018/",
                   "database_name": "twitter_2hours",
                   "collection": "coll",
                   "time": 120
@@ -32,7 +32,7 @@ databases = [
                 {
                   "engine": "mongo",
                   "name": "4hours", 
-                  "URI": "mongodb://21.0.0.11:27019/",
+                  "URI": "mongodb://192.168.67.13:27019/",
                   "database_name": "twitter_4hours",
                   "collection": "coll",
                   "time": 240
@@ -41,7 +41,7 @@ databases = [
                 {
                   "engine": "mongo",
                   "name": "6hours",
-                  "URI": "mongodb://21.0.0.11:27020/",
+                  "URI": "mongodb://192.168.67.13:27020/",
                   "database_name": "twitter_6hours",
                   "collection": "coll",
                   "time": 360
