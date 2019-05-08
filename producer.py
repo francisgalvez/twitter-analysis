@@ -22,8 +22,7 @@ class MyStreamListener(tweepy.StreamListener):
 
 
 if __name__ == '__main__':
-    # localhost:9092 = Default Zookeeper Producer Host and Port Adresses
-    kafka = KafkaClient('localhost:9092')
+    kafka = KafkaClient('21.0.0.6:9092', '21.0.0.13:9092')
     producer = SimpleProducer(kafka)
 
     # Get an API item using tweepy

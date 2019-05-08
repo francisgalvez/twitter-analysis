@@ -1,23 +1,42 @@
 version: '3.3'
 
 services:
-  mongo:
-    container_name: mongo
+  mongosystem:
     image: mongo
     volumes:
-      - ./data:/data/db
+      - ./data:/data/db/system
     ports:
       - "27017:27017"
+
+  mongo2h:
+    image: mongo
+    volumes:
+      - ./data:/data/db/2hours
+    ports:
+      - "27018:27018"
+  
+  mongo4h:
+    image: mongo
+    volumes:
+      - ./data:/data/db/4hours
+    ports:
+      - "27019:27019"
+  
+  mongo6h:
+    image: mongo
+    volumes:
+      - ./data:/data/db/6hours
+    ports:
+      - "27020:27020"
   
   mongo-seed:
     build: ./mongo-seed
     links:
-      - mongo
+      - mongosystem
 
   redis:
-    container_name: redis
     image: redis
     ports:
       - '6379:6379'
     volumes:
-      - ./data:/data/cache
+      - ./data:/data/db/cache
