@@ -13,26 +13,26 @@ services:
     volumes:
       - ./data:/data/db/2hours
     ports:
-      - "27018:27018"
+      - "27018:27017"
   
   mongo-4hours:
     image: mongo
     volumes:
       - ./data:/data/db/4hours
     ports:
-      - "27019:27019"
+      - "27019:27017"
   
   mongo-6hours:
     image: mongo
     volumes:
       - ./data:/data/db/6hours
     ports:
-      - "27020:27020"
+      - "27020:27017"
   
   mongo-seed:
     build: ./mongo-seed
     links:
-      - mongosystem
+      - mongo-system
 
   redis:
     image: redis
