@@ -91,7 +91,7 @@ topics = [
         ]
 
 # Crear BD "System"
-client = MongoClient('mongodb://mongosystem:27017/')
+client = MongoClient('mongodb://mongo-system:27017/')
 dbnames = client.list_database_names()
 
 if 'settings' in dbnames:
