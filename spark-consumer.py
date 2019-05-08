@@ -182,7 +182,7 @@ if __name__ == '__main__':
     databases_pandas = databases.toPandas()
 
     # Create Kafka Stream to Consume Data Comes From Twitter Topic
-    kafkaStream = KafkaUtils.createDirectStream(ssc, topics=['twitter'], kafkaParams={'metadata.broker.list': '21.0.0.6:9092, 21.0.0.13:9092'})
+    kafkaStream = KafkaUtils.createDirectStream(ssc, topics=['twitter'], kafkaParams={'metadata.broker.list': '21.0.0.6:9092, 21.0.0.13:9092, 21.0.0.12:9092'})
 
     parsedJSON = kafkaStream.map(lambda x: parse_json(json.loads(x[1]), topics_pandas))
 

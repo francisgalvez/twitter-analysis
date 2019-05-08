@@ -22,7 +22,7 @@ class MyStreamListener(tweepy.StreamListener):
 
 
 if __name__ == '__main__':
-    kafka = KafkaClient('21.0.0.6:9092', '21.0.0.13:9092')
+    kafka = KafkaClient('21.0.0.6:9092', '21.0.0.13:9092', '21.0.0.12:9092')
     producer = SimpleProducer(kafka)
 
     # Get an API item using tweepy
