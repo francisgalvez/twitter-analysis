@@ -1,5 +1,5 @@
 import tweepy
-from kafka import SimpleProducer, KafkaClient
+from kafka import KafkaProducer
 from pymongo import MongoClient
 from secret import consumer_key, consumer_secret, access_token, access_token_secret
 
@@ -14,7 +14,7 @@ class MyStreamListener(tweepy.StreamListener):
     def on_data(self, data):
         # Producer produces data for consumer
         # Data comes from Twitter
-        producer.send_messages('twitter', data.encode('utf-8'))
+        producer.send('twitter', data.encode('utf-8'))
         return True
 
     def on_error(self, status):
@@ -22,8 +22,7 @@ class MyStreamListener(tweepy.StreamListener):
 
 
 if __name__ == '__main__':
-    kafka = KafkaClient('21.0.0.6:9092', '21.0.0.13:9092')
-    producer = SimpleProducer(kafka)
+    producer = KafkaProducer(bootstrap_servers=['21.0.0.6:9092', '21.0.0.12:9092', '21.0.0.13:9092'])
 
     # Get an API item using tweepy
     auth = get_auth()  # Retrieve an auth object using the function 'get_auth' above
@@ -34,7 +33,7 @@ if __name__ == '__main__':
     myStream = tweepy.Stream(auth=api.auth, listener=myStreamListener)
 
     # Connect to settings database and extract topics
-    client = MongoClient('mongodb://192.168.67.11:27017/')
+    client = MongoClient('mongodb://21.0.0.11:27017/')
     topics = client['settings']['topics'].find()
 
     keywords = []
@@ -42,5 +41,5 @@ if __name__ == '__main__':
     for topic in topics:
         for name in topic['topics']:
             keywords.append(name)
-    
+
     myStream.filter(track=keywords)
