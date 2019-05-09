@@ -155,7 +155,7 @@ tweet_schema = StructType([
 
 if __name__ == '__main__':
     #  1. Create Spark configuration
-    conf = SparkConf().setAppName('TwitterAnalysis').setMaster('local[*]')
+    conf = SparkConf().setAppName('TwitterAnalysis')
 
     # Create Spark Context to Connect Spark Cluster
     sc = SparkContext(conf=conf)
