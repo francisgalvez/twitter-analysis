@@ -14,14 +14,9 @@ import unidecode
 import string
 import ast
 
-"""
-REDIS_POOL = None
 
-def init():
-    global REDIS_POOL
-    REDIS_POOL = redis.ConnectionPool(host=redis_host, port=redis_port, decode_responses=True, db=0)
-"""
 def parse_json(df, topics):
+    print(df['id'])
     id = df['id']
 
     if 'extended_tweet' in df:
@@ -80,6 +75,8 @@ def parse_json(df, topics):
 
     # Para obtener la fecha, dividimos el timestamp entre 1000 (viene en ms)
     date = datetime.utcfromtimestamp(int(timestamp)/1000).strftime('%Y-%m-%d %H:%M:%S')
+
+    print([id, tweet_topics, text, source, user_name, location, sensitive, lang, timestamp, date])
 
     return [id, tweet_topics, text, source, user_name, location, sensitive, lang, timestamp, date]
 
@@ -175,20 +172,24 @@ if __name__ == '__main__':
         .config('spark.mongodb.output.uri') \
         .getOrCreate()
 
+    print('hola')
+
     # Conversion to Pandas DataFrame
     topics = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("uri", "mongodb://21.0.0.11/settings.topics").load()
     databases = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("uri", "mongodb://21.0.0.11/settings.databases").load()
 
+    print('hola2')
     topics_pandas = topics.toPandas()
     databases_pandas = databases.toPandas()
+    print('hola3')
 
     # Create Kafka Stream to Consume Data Comes From Twitter Topic
     kafkaStream = KafkaUtils.createDirectStream(ssc, topics=['twitter'], kafkaParams={'metadata.broker.list': '21.0.0.6:9092, 21.0.0.12:9092, 21.0.0.13:9092'})
-
+    print('hola4')
     parsedJSON = kafkaStream.map(lambda x: parse_json(json.loads(x[1]), topics_pandas))
-
+    print('hola5')
     parsedJSON.foreachRDD(lambda rdd: write_to_databases(spark.createDataFrame(rdd, tweet_schema), databases_pandas))
-
+    print('adios')
     # Start Execution of Streams
     ssc.start()
     ssc.awaitTermination()
