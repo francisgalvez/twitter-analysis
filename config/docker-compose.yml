@@ -1,42 +1,88 @@
-version: '3.3'
+version: '3.7'
 
 services:
   mongo-system:
     image: mongo
+    container-name: mongo-system
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
     volumes:
       - ./data:/data/db/system
     ports:
       - "27017:27017"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
 
   mongo-2hours:
     image: mongo
+    container-name: mongo-2hours
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
     volumes:
       - ./data:/data/db/2hours
     ports:
       - "27018:27017"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
   
   mongo-4hours:
     image: mongo
+    container-name: mongo-4hours
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
     volumes:
       - ./data:/data/db/4hours
     ports:
       - "27019:27017"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
   
   mongo-6hours:
     image: mongo
+    container-name: mongo-6hours
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
     volumes:
       - ./data:/data/db/6hours
     ports:
       - "27020:27017"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
   
   mongo-seed:
+    container-name: mongo-seed
     build: ./mongo-seed
     links:
       - mongo-system
 
   redis:
     image: redis
+    container-name: redis
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     ports:
       - '6379:6379'
     volumes:
       - ./data:/data/db/cache
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s

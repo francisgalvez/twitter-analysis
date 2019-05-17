@@ -36,7 +36,7 @@ Además, deberás registrarte en la plataforma de desarrolladores de Twitter (ht
     python producer.py
 
 ### 6. Iniciar consumer:
-    spark-submit --jars elasticsearch-hadoop-7.0.0.jar --packages org.apache.spark:spark-streaming-kafka-0-8_2.11:2.2.0,org.mongodb.spark:mongo-spark-connector_2.11:2.4.0 spark-consumer.py
+    /opt/spark/bin/spark-submit --master spark://spark-master:7077 --deploy-mode=client --driver-class-path=/home/ubuntu/twitter-analysis/jars/elasticsearch-hadoop-7.0.0.jar --packages org.apache.spark:spark-streaming-kafka-0-8_2.11:2.2.0,org.mongodb.spark:mongo-spark-connector_2.11:2.4.0,org.elasticsearch:elasticsearch-spark-20_2.11:7.0.0 local:///home/ubuntu/twitter-analysis/spark-consumer.py
 
 ### 7. Ver topic 'twitter':
     bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic twitter --from-beginning
