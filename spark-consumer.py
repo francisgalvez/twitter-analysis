@@ -1,9 +1,7 @@
-#coding=utf-8
 from pyspark import SparkConf, SparkContext
 from pyspark.streaming import StreamingContext
 from pyspark.streaming.kafka import KafkaUtils
 from pyspark.sql import SparkSession
-from pyspark.sql.types import *
 from pyspark.sql.types import StructType, StructField, StringType, BooleanType, ArrayType, DoubleType
 from pymongo import MongoClient
 import json
@@ -167,7 +165,7 @@ if __name__ == '__main__':
         .builder \
         .appName('TwitterAnalysis') \
         .config('spark.mongodb.output.uri') \
-        .getOrCreate()
+	.getOrCreate()
 
     # Conversion to Pandas DataFrame
     topics = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("uri", "mongodb://21.0.0.11/settings.topics").load()
