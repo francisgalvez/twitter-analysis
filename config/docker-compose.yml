@@ -6,7 +6,7 @@ services:
     volumes:
       - ./data:/data/db/system
     ports:
-- "27017:27017"
+      - "27017:27017"
 
   mongo-2hours:
     image: mongo
