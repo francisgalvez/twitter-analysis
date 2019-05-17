@@ -133,7 +133,7 @@ def write_to_databases(tweet, databases):
         if row['engine'] == "elasticsearch":
             tweet.write.format('org.elasticsearch.spark.sql').mode('append').option('es.nodes', row['host']).option('es.port', int(row['port'])).option('es.resource', row['index'] + "/" + row['doc_type']).save()
         elif row['engine'] == "mongo":
-            URI = 'mongodb://' + MONGO_USER + ':' + MONGO_PASSWORD + '@' + str(row['URI'] + row['database_name'] + "." + row['collection'])
+            URI = 'mongodb://' + MONGO_USER + ':' + MONGO_PASSWORD + '@' + row['URI'] + row['database_name'] + "." + row['collection'] + '?authSource=' + row['database_name']
             tweet.write.format('com.mongodb.spark.sql.DefaultSource').mode('append').option('uri', URI).save()
 
 
@@ -168,8 +168,8 @@ if __name__ == '__main__':
 	.getOrCreate()
 
     # Conversion to Pandas DataFrame
-    topics = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("uri", "mongodb://21.0.0.11/settings.topics").load()
-    databases = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("uri", "mongodb://21.0.0.11/settings.databases").load()
+    topics = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("uri", 'mongodb://' + MONGO_USER + ':' + MONGO_PASSWORD + '@' + '21.0.0.11/settings.topics').load()
+    databases = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("uri", 'mongodb://' + MONGO_USER + ':' + MONGO_PASSWORD + '@' + '21.0.0.11/settings.databases').load()
 
     topics_pandas = topics.toPandas()
     databases_pandas = databases.toPandas()
