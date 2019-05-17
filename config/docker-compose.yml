@@ -1,88 +1,75 @@
-version: '3.7'
+version: '3.3'
 
 services:
   mongo-system:
     image: mongo
-    container-name: mongo-system
+    container_name: mongo-system
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+      - 'MONGO_DB=settings'
+      - 'MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}'
+      - 'MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}'
     volumes:
       - ./data:/data/db/system
+      - ./init-mongo-system.sh:/docker-entrypoint-initdb.d/init-mongo-system.sh
     ports:
       - "27017:27017"
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
+    restart: always
 
   mongo-2hours:
     image: mongo
-    container-name: mongo-2hours
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+    container_name: mongo-2hours
+    environment:
+      - 'MONGO_DB=twitter_2hours'
+      - 'MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}'
+      - 'MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}'
     volumes:
       - ./data:/data/db/2hours
+      - ./init-mongo-2hours.sh:/docker-entrypoint-initdb.d/init-mongo-2hours.sh
     ports:
       - "27018:27017"
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
+    restart: always
   
   mongo-4hours:
     image: mongo
-    container-name: mongo-4hours
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+    container_name: mongo-4hours
+    environment:
+      - 'MONGO_DB=twitter_4hours'
+      - 'MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}'
+      - 'MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}'
     volumes:
       - ./data:/data/db/4hours
+      - ./init-mongo-4hours.sh:/docker-entrypoint-initdb.d/init-mongo-4hours.sh
     ports:
       - "27019:27017"
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
+    restart: always
   
   mongo-6hours:
     image: mongo
-    container-name: mongo-6hours
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+    container_name: mongo-6hours
+    environment:
+      - 'MONGO_DB=twitter_6hours'
+      - 'MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}'
+      - 'MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}'
     volumes:
       - ./data:/data/db/6hours
+      - ./init-mongo-6hours.sh:/docker-entrypoint-initdb.d/init-mongo-6hours.sh
     ports:
       - "27020:27017"
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
+    restart: always
   
   mongo-seed:
-    container-name: mongo-seed
+    container_name: mongo-seed
     build: ./mongo-seed
     links:
       - mongo-system
 
   redis:
     image: redis
-    container-name: redis
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    container_name: redis
+    environment:
+      - 'REDIS_PASSWORD=${REDIS_PASSWORD}'
     ports:
       - '6379:6379'
     volumes:
       - ./data:/data/db/cache
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
+    restart: always

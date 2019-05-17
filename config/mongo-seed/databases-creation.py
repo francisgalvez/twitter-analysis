@@ -1,4 +1,6 @@
 from pymongo import MongoClient
+from secret import MONGO_USER, MONGO_PASSWORD, REDIS_PASSWORD
+
 
 databases = [
                 {
@@ -91,7 +93,7 @@ topics = [
         ]
 
 # Crear BD "System"
-client = MongoClient('mongodb://mongo-system:27017/')
+client = MongoClient('mongodb://' + MONGO_USER + ':' + MONGO_PASSWORD + '@' + 'mongo-system:27017/')
 dbnames = client.list_database_names()
 
 if 'settings' in dbnames:
