@@ -23,7 +23,7 @@ databases = [
                 {
                   "engine": "mongo",
                   "name": "2hours",
-                  "URI": "mongodb://192.168.67.13:27018/",
+                  "URI": "192.168.67.13:27018/",
                   "database_name": "twitter_2hours",
                   "collection": "coll",
                   "time": 120
@@ -32,7 +32,7 @@ databases = [
                 {
                   "engine": "mongo",
                   "name": "4hours", 
-                  "URI": "mongodb://192.168.67.13:27019/",
+                  "URI": "192.168.67.13:27019/",
                   "database_name": "twitter_4hours",
                   "collection": "coll",
                   "time": 240
@@ -41,7 +41,7 @@ databases = [
                 {
                   "engine": "mongo",
                   "name": "6hours",
-                  "URI": "mongodb://192.168.67.13:27020/",
+                  "URI": "192.168.67.13:27020/",
                   "database_name": "twitter_6hours",
                   "collection": "coll",
                   "time": 360
@@ -87,7 +87,7 @@ topics = [
 
             { "topics": ["SQLite"],
               "name": "SQLite",
-              "keywords": ["sqlite"] },         
+              "keywords": ["sqlite"] }         
         ]
 
 # Crear BD "System"
@@ -107,10 +107,6 @@ topics_coll = settings['topics']
 
 databases_coll.insert_many(databases)
 topics_coll.insert_many(topics, ordered=False)
-
-# Indexar BD principal
-twitter = client['twitter']['coll']
-twitter.create_index("topics")
 
 twitter_2hours = client['twitter_2hours']['coll']
 twitter_4hours = client['twitter_4hours']['coll']

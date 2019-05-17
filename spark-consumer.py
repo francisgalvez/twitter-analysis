@@ -4,13 +4,13 @@ from pyspark.streaming.kafka import KafkaUtils
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType, BooleanType, ArrayType, DoubleType
 from pymongo import MongoClient
+from secret import MONGO_USER, MONGO_PASSWORD, REDIS_PASSWORD
 import json
 from datetime import datetime
 import redis
 import requests
 import unidecode
 import string
-import ast
 
 
 def parse_json(df, topics):
@@ -119,12 +119,12 @@ def get_coordinates(address):
 
 
 def get_cached_location(key):
-    my_server = redis.Redis(connection_pool=redis.ConnectionPool(host='21.0.0.11', port=6379, decode_responses=True, db=0))
+    my_server = redis.Redis(connection_pool=redis.ConnectionPool(host='21.0.0.11', port=6379, password=REDIS_PASSWORD, decode_responses=True, db=0))
     return my_server.get(key)
 
 
 def set_cached_location(name, longitude, latitude):
-    my_server = redis.Redis(connection_pool=redis.ConnectionPool(host='21.0.0.11', port=6379, decode_responses=True, db=0))
+    my_server = redis.Redis(connection_pool=redis.ConnectionPool(host='21.0.0.11', port=6379, password=REDIS_PASSWORD, decode_responses=True, db=0))
     my_server.set(name, str([longitude, latitude]))
 
 
@@ -133,7 +133,7 @@ def write_to_databases(tweet, databases):
         if row['engine'] == "elasticsearch":
             tweet.write.format('org.elasticsearch.spark.sql').mode('append').option('es.nodes', row['host']).option('es.port', int(row['port'])).option('es.resource', row['index'] + "/" + row['doc_type']).save()
         elif row['engine'] == "mongo":
-            URI = str(row['URI'] + row['database_name'] + "." + row['collection'])
+            URI = 'mongodb://' + MONGO_USER + ':' + MONGO_PASSWORD + '@' + str(row['URI'] + row['database_name'] + "." + row['collection'])
             tweet.write.format('com.mongodb.spark.sql.DefaultSource').mode('append').option('uri', URI).save()
 
 

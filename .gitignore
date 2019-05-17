@@ -76,6 +76,7 @@ build/
 
 # Personal
 **secret.py
+secret.env
 hosts.py
 databases.json
 spark-warehouse
