@@ -5,21 +5,15 @@ from pyspark.sql import SparkSession
 from pyspark.sql.types import *
 from pyspark.sql.types import StructType, StructField, StringType, BooleanType, ArrayType, DoubleType
 from pymongo import MongoClient
+from secret import MONGO_USER, MONGO_PASSWORD, REDIS_PASSWORD
 import json
 from datetime import datetime
 import redis
 import requests
 import unidecode
 import string
-import ast
 
-"""
-REDIS_POOL = None
 
-def init():
-    global REDIS_POOL
-    REDIS_POOL = redis.ConnectionPool(host=redis_host, port=redis_port, decode_responses=True, db=0)
-"""
 def parse_json(df, topics):
     id = df['id']
 
@@ -126,12 +120,12 @@ def get_coordinates(address):
 
 
 def get_cached_location(key):
-    my_server = redis.Redis(connection_pool=redis.ConnectionPool(host='192.168.67.11', port=6379, decode_responses=True, db=0))
+    my_server = redis.Redis(connection_pool=redis.ConnectionPool(host='21.0.0.11', port=6379, password=REDIS_PASSWORD, decode_responses=True, db=0))
     return my_server.get(key)
 
 
 def set_cached_location(name, longitude, latitude):
-    my_server = redis.Redis(connection_pool=redis.ConnectionPool(host='192.168.67.11', port=6379, decode_responses=True, db=0))
+    my_server = redis.Redis(connection_pool=redis.ConnectionPool(host='21.0.0.11', port=6379, password=REDIS_PASSWORD, decode_responses=True, db=0))
     my_server.set(name, str([longitude, latitude]))
 
 
@@ -140,7 +134,7 @@ def write_to_databases(tweet, databases):
         if row['engine'] == "elasticsearch":
             tweet.write.format('org.elasticsearch.spark.sql').mode('append').option('es.nodes', row['host']).option('es.port', int(row['port'])).option('es.resource', row['index'] + "/" + row['doc_type']).save()
         elif row['engine'] == "mongo":
-            URI = str(row['URI'] + row['database_name'] + "." + row['collection'])
+            URI = 'mongodb://' + MONGO_USER + ':' + MONGO_PASSWORD + '@' + str(row['URI'] + row['database_name'] + "." + row['collection'])
             tweet.write.format('com.mongodb.spark.sql.DefaultSource').mode('append').option('uri', URI).save()
 
 
@@ -160,7 +154,7 @@ tweet_schema = StructType([
 
 if __name__ == '__main__':
     #  1. Create Spark configuration
-    conf = SparkConf().setAppName('TwitterAnalysis').setMaster('local[*]')
+    conf = SparkConf().setAppName('TwitterAnalysis')
 
     # Create Spark Context to Connect Spark Cluster
     sc = SparkContext(conf=conf)
@@ -175,14 +169,14 @@ if __name__ == '__main__':
         .getOrCreate()
 
     # Conversion to Pandas DataFrame
-    topics = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("uri", "mongodb://192.168.67.11/settings.topics").load()
-    databases = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("uri", "mongodb://192.168.67.11/settings.databases").load()
+    topics = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("uri", "mongodb://21.0.0.11/settings.topics").load()
+    databases = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("uri", "mongodb://21.0.0.11/settings.databases").load()
 
     topics_pandas = topics.toPandas()
     databases_pandas = databases.toPandas()
 
     # Create Kafka Stream to Consume Data Comes From Twitter Topic
-    kafkaStream = KafkaUtils.createDirectStream(ssc, topics=['twitter'], kafkaParams={'metadata.broker.list': '21.0.0.6:9092, 21.0.0.13:9092, 21.0.0.12:9092'})
+    kafkaStream = KafkaUtils.createDirectStream(ssc, topics=['twitter'], kafkaParams={'metadata.broker.list': '21.0.0.6:9092, 21.0.0.12:9092, 21.0.0.13:9092'})
 
     parsedJSON = kafkaStream.map(lambda x: parse_json(json.loads(x[1]), topics_pandas))
 
