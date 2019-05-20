@@ -79,10 +79,6 @@ topics = [
               "name": "Access",
               "keywords": ["microsoft access"] },
 
-            { "topics": ["Redis"],
-              "name": "Redis",
-              "keywords": ["redis"] },
-
             { "topics": ["Elasticsearch"],
               "name": "Elasticsearch",
               "keywords": ["elasticsearch", "elastic"] },
