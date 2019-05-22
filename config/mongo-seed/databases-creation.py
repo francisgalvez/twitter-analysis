@@ -1,5 +1,5 @@
 from pymongo import MongoClient
-from secret import MONGO_USER, MONGO_PASSWORD, REDIS_PASSWORD
+from secret import MONGO_USER, MONGO_PASSWORD
 
 
 databases = [
@@ -9,16 +9,16 @@ databases = [
                   "URI": "192.168.67.15:9200",
                   "host": "192.168.67.15",
                   "port": "9200",
-                  "index": "twitter",
-                  "doc_type": "tweet"
+                  "index": "twitter_map",
+                  "doc_type": "_doc"
                 },
 
                 {
                   "engine": "redis",
                   "name": "redis", 
-                  "URI": "192.168.67.13:6379/",
+                  "URI": "21.0.0.11:6379/",
                   "database_name": 0,
-                  "host": "192.168.67.13",
+                  "host": "21.0.0.11",
                   "port": "6379"
                 },
 
@@ -78,10 +78,6 @@ topics = [
             { "topics": ["Microsoft Access"],
               "name": "Access",
               "keywords": ["microsoft access"] },
-
-            { "topics": ["Redis"],
-              "name": "Redis",
-              "keywords": ["redis"] },
 
             { "topics": ["Elasticsearch"],
               "name": "Elasticsearch",
