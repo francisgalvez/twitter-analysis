@@ -2,7 +2,7 @@ from pyspark import SparkConf, SparkContext
 from pyspark.streaming import StreamingContext
 from pyspark.streaming.kafka import KafkaUtils
 from pyspark.sql import SparkSession
-from pyspark.sql.types import StructType, StructField, StringType, BooleanType, ArrayType, DoubleType
+from pyspark.sql.types import StructType, StructField, StringType, BooleanType, ArrayType, DoubleType, IntegerType
 from pymongo import MongoClient
 from secret import MONGO_USER, MONGO_PASSWORD, REDIS_PASSWORD
 import json
@@ -35,9 +35,6 @@ def parse_json(df, topics):
                 if row['name'] not in tweet_topics:
                     tweet_topics.append(str(row['name']))
 
-    # Volvemos a guardar el texto a partir de 'text' (menos espacio en BD, no importa para mostrarlos)
-    text = df['text']
-
     if 'android' in df['source'].lower():
         source = 'Android'
     elif 'iphone' in df['source'].lower():
@@ -47,7 +44,16 @@ def parse_json(df, topics):
     else:
         source = 'Otros'
 
+    retweet_count = df['retweet_count']
+    favorite_count = df['favorite_count']
+    hashtags_count = len(df['entities']['hashtags'].index)
+    user_mentions_count = len(df['entities']['user_mentions'].index)
+
     user_name = df['user']['screen_name']
+    followers = df['user']['followers_count']
+    followed_by = df['user']['friends_count']
+    verified = df['user']['verified']
+    geo_enabled = df['user']['geo_enabled']
 
     # Si tenemos ubicación exacta (coordinates != null) las cogemos antes que place
     if df['coordinates'] is not None:
@@ -73,7 +79,7 @@ def parse_json(df, topics):
     # Para obtener la fecha, dividimos el timestamp entre 1000 (viene en ms)
     date = datetime.utcfromtimestamp(int(timestamp)/1000).strftime('%Y-%m-%d %H:%M:%S')
 
-    return [id, tweet_topics, text, source, user_name, location, sensitive, lang, timestamp, date]
+    return [id, tweet_topics, text, source, retweet_count, favorite_count, hashtags_count, user_mentions_count, user_name, followed_by, followed_by, verified, geo_enabled, location, sensitive, lang, timestamp, date]
 
 
 def get_coordinates(address):
@@ -141,8 +147,16 @@ tweet_schema = StructType([
                     StructField('id', StringType(), False),
                     StructField('topics', ArrayType(StringType()), False),
                     StructField('text', StringType(), False),
-                    StructField('source', StringType(), True),
+                    StructField('source', StringType(), False),
+                    StructField('retweet_count', IntegerType(), False),
+                    StructField('favorite_count', IntegerType(), False),
+                    StructField('hashtags_count', IntegerType(), False),
+                    StructField('user_mentions_count', IntegerType(), False),
                     StructField('user_name', StringType(), False),
+                    StructField('followers', IntegerType(), False),
+                    StructField('followed_by', IntegerType(), False),
+                    StructField('verified', BooleanType(), False),
+                    StructField('geo_enabled', BooleanType(), False),
                     StructField('location', ArrayType(DoubleType()), True),
                     StructField('sensitive', BooleanType(), True),
                     StructField('lang', StringType(), True),

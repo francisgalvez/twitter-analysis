@@ -1,16 +1,16 @@
 from pymongo import MongoClient
-from secret import MONGO_USER, MONGO_PASSWORD, REDIS_PASSWORD
+from secret import MONGO_USER, MONGO_PASSWORD
 
 
 databases = [
                 {
                   "engine": "elasticsearch",
                   "name": "mainDbES", 
-                  "URI": "21.0.0.10:9200",
-                  "host": "21.0.0.10",
+                  "URI": "192.168.67.15:9200",
+                  "host": "192.168.67.15",
                   "port": "9200",
-                  "index": "twitter",
-                  "doc_type": "tweet"
+                  "index": "twitter_map",
+                  "doc_type": "_doc"
                 },
 
                 {
@@ -25,7 +25,7 @@ databases = [
                 {
                   "engine": "mongo",
                   "name": "2hours",
-                  "URI": "21.0.0.11:27018/",
+                  "URI": "192.168.67.13:27018/",
                   "database_name": "twitter_2hours",
                   "collection": "coll",
                   "time": 120
@@ -34,7 +34,7 @@ databases = [
                 {
                   "engine": "mongo",
                   "name": "4hours", 
-                  "URI": "21.0.0.11:27019/",
+                  "URI": "192.168.67.13:27019/",
                   "database_name": "twitter_4hours",
                   "collection": "coll",
                   "time": 240
@@ -43,7 +43,7 @@ databases = [
                 {
                   "engine": "mongo",
                   "name": "6hours",
-                  "URI": "21.0.0.11:27020/",
+                  "URI": "192.168.67.13:27020/",
                   "database_name": "twitter_6hours",
                   "collection": "coll",
                   "time": 360
