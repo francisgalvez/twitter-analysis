@@ -46,8 +46,8 @@ def parse_json(df, topics):
 
     retweet_count = df['retweet_count']
     favorite_count = df['favorite_count']
-    hashtags_count = len(df['entities']['hashtags'].index)
-    user_mentions_count = len(df['entities']['user_mentions'].index)
+    hashtags_count = df['entities']['hashtags'].count()
+    user_mentions_count = df['entities']['user_mentions'].count()
 
     user_name = df['user']['screen_name']
     followers = df['user']['followers_count']
