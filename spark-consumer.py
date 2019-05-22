@@ -4,7 +4,7 @@ from pyspark.streaming.kafka import KafkaUtils
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType, BooleanType, ArrayType, DoubleType
 from pymongo import MongoClient
-from secret import MONGO_USER, MONGO_PASSWORD, REDIS_PASSWORD
+from secret import MONGO_USER, MONGO_PASSWORD
 import json
 from datetime import datetime
 import redis
@@ -119,12 +119,12 @@ def get_coordinates(address):
 
 
 def get_cached_location(key):
-    my_server = redis.Redis(connection_pool=redis.ConnectionPool(host='21.0.0.11', port=6379, password=REDIS_PASSWORD, decode_responses=True, db=0))
+    my_server = redis.Redis(connection_pool=redis.ConnectionPool(host='21.0.0.11', port=6379, decode_responses=True, db=0))
     return my_server.get(key)
 
 
 def set_cached_location(name, longitude, latitude):
-    my_server = redis.Redis(connection_pool=redis.ConnectionPool(host='21.0.0.11', port=6379, password=REDIS_PASSWORD, decode_responses=True, db=0))
+    my_server = redis.Redis(connection_pool=redis.ConnectionPool(host='21.0.0.11', port=6379, decode_responses=True, db=0))
     my_server.set(name, str([longitude, latitude]))
 
 

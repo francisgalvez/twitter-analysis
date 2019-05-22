@@ -1,7 +1,8 @@
 import tweepy
 from kafka import KafkaProducer
 from pymongo import MongoClient
-from secret import consumer_key, consumer_secret, access_token, access_token_secret
+from secret import consumer_key, consumer_secret, access_token, access_token_secret, MONGO_USER, MONGO_PASSWORD
+from httplib import IncompleteRead
 
 
 def get_auth():
@@ -30,10 +31,9 @@ if __name__ == '__main__':
 
     # Connect to the stream
     myStreamListener = MyStreamListener()
-    myStream = tweepy.Stream(auth=api.auth, listener=myStreamListener)
 
     # Connect to settings database and extract topics
-    client = MongoClient('mongodb://21.0.0.11:27017/')
+    client = MongoClient('mongodb://' + MONGO_USER + ':' + MONGO_PASSWORD + '@' + '21.0.0.11:27017/')
     topics = client['settings']['topics'].find()
 
     keywords = []
@@ -42,4 +42,12 @@ if __name__ == '__main__':
         for name in topic['topics']:
             keywords.append(name)
 
-    myStream.filter(track=keywords)
+    while True:
+        try:
+            myStream = tweepy.Stream(auth=api.auth, listener=myStreamListener)
+            myStream.filter(track=keywords)
+        except IncompleteRead:
+            continue
+        except KeyboardInterrupt:
+            myStream.disconnect()
+            break
