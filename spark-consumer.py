@@ -79,7 +79,7 @@ def parse_json(df, topics):
     # Para obtener la fecha, dividimos el timestamp entre 1000 (viene en ms)
     date = datetime.utcfromtimestamp(int(timestamp)/1000).strftime('%Y-%m-%d %H:%M:%S')
 
-    return [id, tweet_topics, text, source, retweet_count, favorite_count, hashtags_count, user_mentions_count, user_name, followed_by, followed_by, verified, geo_enabled, location, sensitive, lang, timestamp, date]
+    return [id, tweet_topics, text, source, retweet_count, favorite_count, hashtags_count, user_mentions_count, user_name, followers, followed_by, verified, geo_enabled, location, sensitive, lang, timestamp, date]
 
 
 def get_coordinates(address):
