@@ -3,6 +3,7 @@ from kafka import KafkaProducer
 from pymongo import MongoClient
 from secret import consumer_key, consumer_secret, access_token, access_token_secret, MONGO_USER, MONGO_PASSWORD
 from httplib import IncompleteRead
+from urllib3.exceptions import ProtocolError
 
 
 def get_auth():
@@ -47,6 +48,8 @@ if __name__ == '__main__':
             myStream = tweepy.Stream(auth=api.auth, listener=myStreamListener)
             myStream.filter(track=keywords)
         except IncompleteRead:
+            continue
+        except (ProtocolError, AttributeError):
             continue
         except KeyboardInterrupt:
             myStream.disconnect()
