@@ -79,7 +79,14 @@ def parse_json(df, topics):
     # Para obtener la fecha, dividimos el timestamp entre 1000 (viene en ms)
     date = datetime.utcfromtimestamp(int(timestamp)/1000).strftime('%Y-%m-%d %H:%M:%S')
 
-    return [id, tweet_topics, text, source, retweet_count, favorite_count, hashtags_count, user_mentions_count, user_name, followers, followed_by, verified, geo_enabled, location, sensitive, lang, timestamp, date]
+    if location is not None:
+        longitude = location[0]
+        latitude = location[1]
+    else:
+        longitude = None
+        latitude = None
+
+    return [id, tweet_topics, text, source, retweet_count, favorite_count, hashtags_count, user_mentions_count, user_name, followers, followed_by, verified, geo_enabled, location, longitude, latitude, sensitive, lang, timestamp, date]
 
 
 def get_coordinates(address):
@@ -112,7 +119,7 @@ def get_coordinates(address):
                 location = [float(longitude), float(latitude)]
 
                 # Restringir localizaciones ficticias
-                if location is not [0.0, 0.0]:
+                if location is not [0.0, 0.0] and location is not [0, 0]:
                     return location
                 else:
                     return None
@@ -154,10 +161,12 @@ tweet_schema = StructType([
                     StructField('user_mentions_count', IntegerType(), False),
                     StructField('user_name', StringType(), False),
                     StructField('followers', IntegerType(), False),
-                    StructField('followed_by', IntegerType(), False),
+                    StructField('friends', IntegerType(), False),
                     StructField('verified', BooleanType(), False),
                     StructField('geo_enabled', BooleanType(), False),
                     StructField('location', ArrayType(DoubleType()), True),
+                    StructField('longitude', DoubleType(), True),
+                    StructField('latitude', DoubleType(), True),
                     StructField('sensitive', BooleanType(), True),
                     StructField('lang', StringType(), True),
                     StructField('timestamp', StringType(), False),
