@@ -8,7 +8,7 @@ This application has a [producer](https://github.com/francisgalvez/twitter-analy
     
 In order to obtain the location of each tweet, this app doesn't only use the tweet's coordinates, but when it doesn't have a known location, we use the user's biography location. Thus, through the Data Science Toolkit API, we can obtain the coordinates of a given address and be able to save them alongside the tweet. In this sense, we use a Redis cache to avoid huge numbers of API requests. So, when an address coordinates are requested to the mentioned API, they are saved in the cache, and the next time the same address appears, the app won't have to request the API, just search in Redis.
 
-The final purpose of the app is to be able to show the tweets of which we have location data. They will all be displayed in a map, as can be seen in [this repo]](https://github.com/francisgalvez/twitter-analysis-web). 
+The final purpose of the app is to be able to show the tweets of which we have location data. They will all be displayed in a map, as can be seen in [this repo](https://github.com/francisgalvez/twitter-analysis-web). 
 
 ## Before getting started
 Before executing the Spark job, you will have to install the following modules:
